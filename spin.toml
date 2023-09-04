@@ -1,0 +1,35 @@
+spin_version = "1"
+authors = ["Rajat Jindal <rajatjindal83@gmail.com>"]
+description = ""
+name = "rust-test-reporter"
+trigger = { type = "http", base = "/" }
+version = "0.1.0"
+
+[[component]]
+source = { url = "https://github.com/fermyon/spin-fileserver/releases/download/v0.0.1/spin_static_fs.wasm", digest = "sha256:650376c33a0756b1a52cad7ca670f1126391b79050df0321407da9c741d32375" }
+id = "fileserver_static"
+files = [ { source = "ui/.output/public/", destination = "/" } ]
+[component.trigger]
+route = "/..."
+[component.build]
+command = "cd ui && yarn install && yarn generate && cd -"
+
+[[component]]
+id = "backend"
+source = "backend/main.wasm"
+allowed_http_hosts = []
+key_value_stores = ["default"]
+sqlite_databases = ["default"]
+[component.trigger]
+route = "/api/..."
+[component.build]
+command = "cd backend && tinygo build -target=wasi -gc=leaking -no-debug -o main.wasm main.go && cd -"
+watch = ["**/*.go", "go.mod"]
+
+[[component]]
+source = { url = "https://github.com/radu-matei/spin-kv-explorer/releases/download/v0.8.0/spin-kv-explorer.wasm", digest = "sha256:e1667e756004000913d869b72db600fb2675f4358c6f0cc2581dfa869e56073c" }
+id = "kv-explorer"
+# add or remove stores you want to explore here
+key_value_stores = ["default"]
+[component.trigger]
+route = "/internal/kv-explorer/..."

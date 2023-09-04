@@ -1,0 +1,41 @@
+{
+  "name": "tests-dashboard",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev --no-clear",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "test:coverage": "vitest run --coverage",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "@peeky/server": "^0.14.0",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "^0.32.4",
+    "@vitest/ui": "^0.32.4",
+    "autoprefixer": "^10.4.14",
+    "moment": "^2.29.4",
+    "moment-timezone": "^0.5.43",
+    "nuxt": "^3.6.1",
+    "postcss": "^8.4.24",
+    "tailwindcss": "^3.3.2",
+    "vitest": "^0.32.4"
+  },
+  "dependencies": {
+    "@nuxtjs/tailwindcss": "^6.1.3",
+    "@types/chart.js": "^2.9.37",
+    "@types/vue-moment": "^4.0.3",
+    "chart.js": "^4.4.0",
+    "moment": "^2.29.4",
+    "moment-timezone": "^0.5.43",
+    "typescript": "^5.1.6",
+    "vite": "^4.3.9",
+    "vue-chartjs": "^5.2.0",
+    "vue-moment": "^4.1.0",
+    "vue-tsc": "^1.8.3",
+    "webpack": "^5.0.0"
+  }
+}

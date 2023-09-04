@@ -1,0 +1,43 @@
+name: Deploy bkp ui (nuxt3) to Netlify
+on:    
+  workflow_dispatch:
+    inputs: {}
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code repo
+        uses: actions/checkout@v2
+      
+      - name: Setup nodejs
+        uses: actions/setup-node@v2
+        with:
+          node-version: '19.7.0'
+        
+      - name: Yarn generate
+        run: |
+          yarn install
+          yarn generate
+
+      - name: Checkout dist repo
+        uses: actions/checkout@v2
+        with:
+          path: bkpui-nuxt3-dist
+          ref: dist
+
+      - name: Deploy
+        working-directory: bkpui-nuxt3-dist
+        run: |
+          rm -rf dist
+          cp -R /home/runner/work/bkpui-nuxt3/bkpui-nuxt3/.output dist
+
+          ls -ltr
+          git config user.email "rajatjindal83@gmail.com"
+          git config user.name "Rajat Jindal"
+          git add . && git commit -m "generated"
+          git push origin dist
