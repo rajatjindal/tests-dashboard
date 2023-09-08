@@ -89,3 +89,9 @@ curl -vXPOST https://tests-dashboard-xxxxxxx.fermyon.app/api/run/unique-run-id \
 
 ### open browser and navigate to https://tests-dashboard-xxxxxxx.fermyon.app
 ```
+
+
+#### TODO
+
+- [ ] Add authn/authz
+- [ ] Allow pushing results for multiple services/tenants safe
