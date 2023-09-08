@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rajatjindal/rust-test-reporter/backend/pkg/types"
+	"github.com/rajatjindal/test-dashboard/backend/pkg/types"
 )
 
 func Ingest(runId string, data []byte) (*types.Summary, []types.Suite, error) {

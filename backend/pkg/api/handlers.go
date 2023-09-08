@@ -8,10 +8,10 @@ import (
 	"net/http"
 
 	spinhttp "github.com/fermyon/spin/sdk/go/http"
-	"github.com/rajatjindal/rust-test-reporter/backend/pkg/parser/junit"
-	"github.com/rajatjindal/rust-test-reporter/backend/pkg/parser/rustjson"
-	"github.com/rajatjindal/rust-test-reporter/backend/pkg/storage"
-	"github.com/rajatjindal/rust-test-reporter/backend/pkg/types"
+	"github.com/rajatjindal/test-dashboard/backend/pkg/parser/junit"
+	"github.com/rajatjindal/test-dashboard/backend/pkg/parser/rustjson"
+	"github.com/rajatjindal/test-dashboard/backend/pkg/storage"
+	"github.com/rajatjindal/test-dashboard/backend/pkg/types"
 )
 
 func fetchAllRuns(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
@@ -76,8 +76,7 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 	}
 
 	var metadata types.Metadata
-	var summary *types.Summary
-	var suites []types.Suite
+	var rawResults []byte
 
 	for {
 		part, err := reader.NextPart()
@@ -114,18 +113,20 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 		}
 
 		if params["name"] == "results" {
-			raw, err := io.ReadAll(part)
+			rawResults, err = io.ReadAll(part)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-
-			if metadata.Format == "junit" {
-				summary, suites, err = junit.Ingest(runId, raw)
-			} else {
-				summary, suites, err = rustjson.Ingest(runId, raw)
-			}
 		}
+	}
+
+	var summary *types.Summary
+	var suites []types.Suite
+	if metadata.Format == "junit" {
+		summary, suites, err = junit.Ingest(runId, rawResults)
+	} else {
+		summary, suites, err = rustjson.Ingest(runId, rawResults)
 	}
 
 	err = storage.IngestTestRun(r.Context(), &metadata, summary, suites)

@@ -1,4 +1,4 @@
-module github.com/rajatjindal/rust-test-reporter/backend
+module github.com/rajatjindal/test-dashboard/backend
 
 go 1.20
 

@@ -6,7 +6,7 @@ import (
 
 	"github.com/fermyon/spin/sdk/go/sqlite"
 	"github.com/jmoiron/sqlx"
-	"github.com/rajatjindal/rust-test-reporter/backend/pkg/types"
+	"github.com/rajatjindal/test-dashboard/backend/pkg/types"
 )
 
 func db() *sqlx.DB {

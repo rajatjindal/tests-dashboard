@@ -53,9 +53,9 @@ sqlite3 .spin/sqlite_db.db
 curl -vXPOST http://localhost:3000/api/run/unique-run-id \
 	-H "Content-Type: multipart/mixed" \
 	-F "results=@backend/pkg/parser/junit/data/junit.log" \
-	-F "metadata={\"runId\":\"unique-run-id\",\"repo\":\"rajatjindal/test-reporter\",\"branch\":\"main\",\"format\":\"junit\", \"link\":\"http://link/to/github/actions/or/elsewhere\", \"tags\":\"tag1,tag2\"};type=application/json"
+	-F "metadata={\"runId\":\"unique-run-id\",\"repo\":\"rajatjindal/tests-dashboard\",\"branch\":\"main\",\"format\":\"junit\", \"link\":\"http://link/to/github/actions/or/elsewhere\", \"tags\":\"tag1,tag2\"};type=application/json"
 
-### open browser and navigate to http://localhost:3000/
+### open browser and navigate to http://localhost:3000/?service=rajatjindal/tests-dashboard
 ```
 
 ### Deploy to Fermyon Cloud
@@ -85,9 +85,9 @@ spin cloud sqlite execute <db-name> "$(cat backend/sql/create-table.sql)"
 curl -vXPOST https://tests-dashboard-xxxxxxx.fermyon.app/api/run/unique-run-id \
 	-H "Content-Type: multipart/mixed" \
 	-F "results=@backend/pkg/parser/junit/data/junit.log" \
-	-F "metadata={\"runId\":\"unique-run-id\",\"repo\":\"rajatjindal/test-reporter\",\"branch\":\"main\",\"format\":\"junit\", \"link\":\"http://link/to/github/actions/or/elsewhere\", \"tags\":\"tag1,tag2\"};type=application/json"
+	-F "metadata={\"runId\":\"unique-run-id\",\"repo\":\"rajatjindal/tests-dashboard\",\"branch\":\"main\",\"format\":\"junit\", \"link\":\"http://link/to/github/actions/or/elsewhere\", \"tags\":\"tag1,tag2\"};type=application/json"
 
-### open browser and navigate to https://tests-dashboard-xxxxxxx.fermyon.app
+### open browser and navigate to https://tests-dashboard-xxxxxxx.fermyon.app?service=rajatjindal/tests-dashboard
 ```
 
 

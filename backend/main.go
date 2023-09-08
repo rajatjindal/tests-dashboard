@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	spinhttp "github.com/fermyon/spin/sdk/go/http"
-	"github.com/rajatjindal/rust-test-reporter/backend/pkg/api"
+	"github.com/rajatjindal/test-dashboard/backend/pkg/api"
 )
 
 func init() {
