@@ -14,7 +14,7 @@
 									 class="col-span-1" />
 
 			<InputText v-model="service"
-									 label="repo to fetch logs for"
+									 label="service to fetch results for"
 									 class="col-span-1" />
 		</div>
 
