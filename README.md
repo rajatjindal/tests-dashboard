@@ -2,6 +2,15 @@
 
 This app provides a Tests Dashboard that helps track the test results overtime.
 
+## Summary Trends
+![Summary of trends](docs/summary.png)
+
+## Details of single run
+
+populated on clicking the graph bar
+
+![Details of single run](docs/details.png)
+
 This is developed using `golang/tinygo/nuxtjs/Spin` and deployed on Fermyon Cloud. It makes use of Fermyon's NoOps SQLite integration to store the results.
 
 ## Getting started
