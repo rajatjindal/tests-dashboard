@@ -18,7 +18,7 @@ export const myfetch = ofetch.create({
     },
 })
 
-export const formatDate = function (input: Date | string | undefined, format: string = 'MMM DD, HH:MM'): string {
+export const formatDate = function (input: Date | string | undefined, format: string = 'MMM DD, HH:mm'): string {
 	return moment(input as MomentInput).format(format)
 }
 
