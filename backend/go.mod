@@ -15,4 +15,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/fermyon/spin/sdk/go => github.com/adamreese/spin/sdk/go v0.0.0-20230905200242-691376841571
+replace github.com/fermyon/spin/sdk/go => github.com/fermyon/spin/sdk/go v1.3.1-0.20230911190838-f554a45ce1f2
