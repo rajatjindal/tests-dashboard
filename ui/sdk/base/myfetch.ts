@@ -3,7 +3,7 @@ import { MomentInput } from 'moment'
 import moment from 'moment'
 
 const runtimeConfig = useRuntimeConfig().public.baseURL
-const baseURL = ""
+const baseURL = "https://testreporter.usingspin.com"
 
 export const myfetch = ofetch.create({
     baseURL: baseURL,

@@ -13,18 +13,31 @@ files = [ { source = "ui/.output/public/", destination = "/" } ]
 route = "/..."
 [component.build]
 command = "cd ui && yarn install && yarn generate && cd -"
+watch = ["**/*.vue", "**/*.ts"]
 
 [[component]]
-id = "backend"
-source = "backend/main.wasm"
-allowed_http_hosts = []
-key_value_stores = ["default"]
-sqlite_databases = ["default"]
+id = "redirect-from-www"
+source = "redirector/redirect.wasm"
+
+[component.config]
+destination="/"
+statuscode="301"
+include_path_query_params="true"
+
 [component.trigger]
-route = "/api/..."
-[component.build]
-command = "cd backend && tinygo build -target=wasi -gc=leaking -no-debug -o main.wasm main.go && cd -"
-watch = ["**/*.go", "go.mod"]
+route = "/run/..."
+
+# [[component]]
+# id = "backend"
+# source = "backend/main.wasm"
+# allowed_http_hosts = []
+# key_value_stores = ["default"]
+# sqlite_databases = ["default"]
+# [component.trigger]
+# route = "/api/..."
+# [component.build]
+# command = "cd backend && tinygo build -target=wasi -gc=leaking -no-debug -o main.wasm main.go && cd -"
+# watch = ["**/*.go", "go.mod"]
 
 [[component]]
 source = { url = "https://github.com/radu-matei/spin-kv-explorer/releases/download/v0.8.0/spin-kv-explorer.wasm", digest = "sha256:e1667e756004000913d869b72db600fb2675f4358c6f0cc2581dfa869e56073c" }
