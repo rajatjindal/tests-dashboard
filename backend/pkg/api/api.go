@@ -19,6 +19,9 @@ func New() *spinhttp.Router {
 	router.GET("/api/runs/:runId/suites", fetchSuitesForRun)
 	router.GET("/api/runs/:runId/suites/:suiteId/tests", fetchTestsForRunIdAndSuite)
 
+	router.GET("/api/history/log", fetchHistoryForLogLine)
+	router.GET("/api/history/test", fetchHistoryForTestcase)
+
 	return router
 }
 

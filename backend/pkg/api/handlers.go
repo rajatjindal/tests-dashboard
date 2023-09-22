@@ -149,6 +149,30 @@ func fetchTestsForRunIdAndSuite(w http.ResponseWriter, r *http.Request, params s
 	prettyPrint(w, tests)
 }
 
+func fetchHistoryForLogLine(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	logLine := r.URL.Query().Get("logLine")
+
+	tests, err := storage.FetchHistoryForLogLine(r.Context(), logLine)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	prettyPrint(w, tests)
+}
+
+func fetchHistoryForTestcase(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	logLine := r.URL.Query().Get("name")
+
+	tests, err := storage.FetchHistoryForTestcase(r.Context(), logLine)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	prettyPrint(w, tests)
+}
+
 func fetchSuitesForRun(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
 	runId := params.ByName("runId")
 	suites, err := storage.FetchSuitesForRun(r.Context(), runId)

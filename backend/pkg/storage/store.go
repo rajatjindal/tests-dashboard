@@ -63,6 +63,52 @@ func FetchSuitesForRun(ctx context.Context, runId string) ([]string, error) {
 	return items, nil
 }
 
+func FetchHistoryForLogLine(ctx context.Context, logLine string) ([]*types.Test, error) {
+	conn := db()
+	defer conn.Close()
+
+	rows, err := conn.Queryx("select * from tests where lower(logs) LIKE ?", "%"+logLine+"%")
+	if err != nil {
+		return nil, err
+	}
+
+	tests := []*types.Test{}
+	for rows.Next() {
+		var test types.Test
+		err = rows.StructScan(&test)
+		if err != nil {
+			return nil, err
+		}
+
+		tests = append(tests, &test)
+	}
+
+	return tests, nil
+}
+
+func FetchHistoryForTestcase(ctx context.Context, testname string) ([]*types.Test, error) {
+	conn := db()
+	defer conn.Close()
+
+	rows, err := conn.Queryx("select * from tests where lower(name) LIKE ?", "%"+testname+"%")
+	if err != nil {
+		return nil, err
+	}
+
+	tests := []*types.Test{}
+	for rows.Next() {
+		var test types.Test
+		err = rows.StructScan(&test)
+		if err != nil {
+			return nil, err
+		}
+
+		tests = append(tests, &test)
+	}
+
+	return tests, nil
+}
+
 func FetchTestsByRunIdAndSuite(ctx context.Context, runId, suite string) ([]*types.Test, error) {
 	conn := db()
 	defer conn.Close()
