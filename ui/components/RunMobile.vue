@@ -18,7 +18,7 @@
 				<div>
 					<p v-for="line in test.logs.split('\n')"
 							class="text-darkplum italic">
-						{{ line }}
+							<span v-html="highlight(line)"></span>
 					</p>
 				</div>
 			</div>
@@ -28,19 +28,41 @@
 
 
 <script setup lang="ts">
-import { getTestsForRunAndSuite } from "@/sdk/backend/api";
+import { getTestsForRunAndSuite, getTestsForLogLine, getTestsForTestcase } from "@/sdk/backend/api";
 import { Test } from "@/sdk/backend/types";
 
 const props = defineProps({
-	runId: { type: String, required: true },
-	showIgnored: { type: Boolean, required: true }
+	runId: { type: String },
+	showIgnored: { type: Boolean, default: true },
+	forlogs: { type: Boolean, default: false},
+	fortestname: { type: Boolean, default: false}
 })
 
 const showFailedOnly = ref(false)
 const tests = ref<Test[]>()
 
 onBeforeMount(async () => {
-	tests.value = await getTestsForRunAndSuite(props.runId, "0")
+	if (props.forlogs) {
+		const logLine = useRoute().query["logLine"];
+		if (logLine) {
+			tests.value = await getTestsForLogLine(logLine.toString())
+		}
+		
+		return
+	}
+
+	if (props.fortestname) {
+		const testname = useRoute().query["testname"];
+		if (testname) {
+			tests.value = await getTestsForTestcase(testname.toString())
+		}
+		
+		return
+	}
+
+	if (props.runId) {
+		tests.value = await getTestsForRunAndSuite(props.runId, "0")
+	}
 })
 
 const filteredTests = computed(() => tests.value ? tests.value.filter(item => {
@@ -56,4 +78,15 @@ const filteredTests = computed(() => tests.value ? tests.value.filter(item => {
 }) : [])
 
 const lastIndex = computed(() => filteredTests.value ? filteredTests.value.length - 1 : 0)
+const highlight = function(line: string): string {
+	const logline = useRoute().query["logLine"];
+	if (!logline) {
+		return line
+	}
+
+  var check = new RegExp(logline.toString(), "ig");
+  return line.toString().replace(check, function(matchedText,a,b){
+      return ('<span class="text-darkmode-blue-contrast1 font-bold">' + matchedText + '</span>');
+  });
+}
 </script>

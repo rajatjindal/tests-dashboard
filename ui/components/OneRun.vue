@@ -17,7 +17,7 @@ import { Summary } from "@/sdk/backend/types";
 
 const currentRun = ref<Summary>({} as Summary)
 const showIgnored = ref(false)
-const runId: string = useRoute().params["id"].toString()
+const runId: string = useRoute().params["id"] ? useRoute().params["id"].toString() : ""
 
 onBeforeMount(async () => {
 	currentRun.value = await getSummary(runId)

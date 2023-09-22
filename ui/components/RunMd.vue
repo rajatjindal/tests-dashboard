@@ -1,5 +1,11 @@
 <template>
 	<div class="mt-5">
+		<div class="text-darkmode-blue-contrast1 mb-10" v-if="useRoute().query['logLine']">
+			Showing history of log line <span class="italic font-bold">{{ useRoute().query["logLine"] }}</span>
+		</div>
+		<div class="text-darkmode-blue-contrast1 mb-10" v-if="useRoute().query['testname']">
+			Showing history of testcase <span class="italic font-bold">{{ useRoute().query["testname"] }}</span>
+		</div>
 		<div class="col-span-1 text-xs my-auto">
 			<input type="checkbox"
 						 class="rounded mt-2"
@@ -37,7 +43,7 @@
 			<div class="col-span-4">
 				<p v-for="line in test.logs.split('\n')"
 					 class="text-darkplum italic">
-					{{ line }}
+					<span v-html="highlight(line)"></span>
 				</p>
 			</div>
 		</div>
@@ -47,19 +53,41 @@
 
 <script setup lang="ts">
 import { humanDuration } from "@/sdk/base/myfetch";
-import { getTestsForRunAndSuite } from "@/sdk/backend/api";
+import { getTestsForRunAndSuite, getTestsForLogLine } from "@/sdk/backend/api";
 import { Test } from "@/sdk/backend/types";
 
 const props = defineProps({
-	runId: { type: String, required: true },
-	showIgnored: { type: Boolean, required: true }
+	runId: { type: String },
+	showIgnored: { type: Boolean, default: true },
+	forlogs: { type: Boolean, default: false},
+	fortestname: { type: Boolean, default: false}
 })
 
 const showFailedOnly = ref(false)
 const tests = ref<Test[]>()
 
 onBeforeMount(async () => {
-	tests.value = await getTestsForRunAndSuite(props.runId, "0")
+	if (props.forlogs) {
+		const logLine = useRoute().query["logLine"];
+		if (logLine) {
+			tests.value = await getTestsForLogLine(logLine.toString())
+		}
+		
+		return
+	}
+
+	if (props.fortestname) {
+		const testname = useRoute().query["testname"];
+		if (testname) {
+			tests.value = await getTestsForLogLine(testname.toString())
+		}
+		
+		return
+	}
+
+	if (props.runId) {
+		tests.value = await getTestsForRunAndSuite(props.runId, "0")
+	}
 })
 
 const filteredTests = computed(() => tests.value ? tests.value.filter(item => {
@@ -75,4 +103,16 @@ const filteredTests = computed(() => tests.value ? tests.value.filter(item => {
 }) : [])
 
 const lastIndex = computed(() => filteredTests.value ? filteredTests.value.length - 1 : 0)
+
+const highlight = function(line: string): string {
+	const logline = useRoute().query["logLine"];
+	if (!logline) {
+		return line
+	}
+
+  var check = new RegExp(logline.toString(), "ig");
+  return line.toString().replace(check, function(matchedText,a,b){
+      return ('<span class="bg-seagreen font-bold px-1 py-0.5 rounded">' + matchedText + '</span>');
+  });
+}
 </script>

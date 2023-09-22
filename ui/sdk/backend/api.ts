@@ -35,3 +35,17 @@ export const getTestsForRunAndSuite = async (runId: string, suiteId: string): Pr
 		method: 'GET'
 	});
 }
+
+export const getTestsForLogLine = async (logLine: string): Promise<Test[]> => {
+	const path = `/api/history/log?logLine=${logLine}`
+	return await myfetch(path, {
+		method: 'GET'
+	});
+}
+
+export const getTestsForTestcase = async (testname: string): Promise<Test[]> => {
+	const path = `/api/history/test?name=${testname}`
+	return await myfetch(path, {
+		method: 'GET'
+	});
+}
