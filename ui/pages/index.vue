@@ -4,7 +4,7 @@
 <script lang="ts" setup>
   console.log(useRoute().query["redirect-original-path"])
   const original = useRoute().query["redirect-original-path"]
-  if (original !== null) {
+  if (original && original != '') {
     useRouter().push(original.toString())  
   }
   
