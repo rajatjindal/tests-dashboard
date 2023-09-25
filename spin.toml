@@ -28,6 +28,18 @@ include_path_query_params="true"
 route = "/run/..."
 
 [[component]]
+id = "redirect-from-www2"
+source = "redirector/redirect.wasm"
+
+[component.config]
+destination="/"
+statuscode="301"
+include_path_query_params="true"
+
+[component.trigger]
+route = "/history/..."
+
+[[component]]
 id = "backend"
 source = "backend/main.wasm"
 allowed_http_hosts = []
