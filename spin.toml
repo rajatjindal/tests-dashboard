@@ -1,7 +1,7 @@
 spin_version = "1"
 authors = ["Rajat Jindal <rajatjindal83@gmail.com>"]
 description = ""
-name = "rust-test-reporter"
+name = "rust-test-reporter-2"
 trigger = { type = "http", base = "/" }
 version = "0.1.0"
 
