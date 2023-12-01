@@ -58,3 +58,10 @@ id = "kv-explorer"
 key_value_stores = ["default"]
 [component.trigger]
 route = "/internal/kv-explorer/..."
+
+[[component]]
+id = "sql-cli"
+source = { url = "https://github.com/karthik2804/spin-sqlite-web-cli/releases/download/v0.1.0/spin-sqlite-web-cli.wasm", digest = "sha256:2bab8dca3c50bc082c543ce9e9b367aec03e9de1efd62c6b748035bd9de48356" }
+sqlite_databases = ["default"]
+[component.trigger]
+route = "/internal/sqlite/..."

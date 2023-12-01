@@ -31,7 +31,7 @@ func Ingest(runId string, data []byte) (*types.Summary, []types.Suite, error) {
 		err := json.Unmarshal([]byte(text), &event)
 		if err != nil {
 			fmt.Println(index, " ", text)
-			fmt.Printf("ignore error index: %d, txt: %s, err: %v", index, text, err)
+			fmt.Printf("ignore error index: %d, txt: '%s', err: %v\n", index, text, err)
 			continue
 		}
 
