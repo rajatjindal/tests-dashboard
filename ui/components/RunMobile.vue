@@ -6,7 +6,7 @@
 						 v-model="showFailedOnly" /><span class="ml-1 text-darkmode-blue-contrast1">Show Failed only</span>
 		</div>
 	</div>
-	<div class="grid md:hidden">
+	<div class="grid">
 		<div class="text-darkmode-blue-contrast1 grid grid-rows border border-darkplum" :class="{'border-b-0': !lastIndex, 'border-b': lastIndex}" v-for="(test, index) in filteredTests" :key="test.name">
 			<div class="w-full px-1 py-2 text-xs">
 				<div class="flex ml-0.5">
@@ -33,6 +33,8 @@ import { Test } from "@/sdk/backend/types";
 
 const props = defineProps({
 	runId: { type: String },
+	suiteId: { type: String },
+	suiteName: { type: String },
 	showIgnored: { type: Boolean, default: true },
 	forlogs: { type: Boolean, default: false},
 	fortestname: { type: Boolean, default: false}
@@ -60,8 +62,8 @@ onBeforeMount(async () => {
 		return
 	}
 
-	if (props.runId) {
-		tests.value = await getTestsForRunAndSuite(props.runId, "0")
+	if (props.runId && props.suiteId) {
+		tests.value = await getTestsForRunAndSuite(props.runId, props.suiteId!)
 	}
 })
 

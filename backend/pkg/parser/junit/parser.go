@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/rajatjindal/test-dashboard/backend/pkg/types"
+	"github.com/rajatjindal/tests-dashboard/backend/pkg/types"
 )
 
 func Ingest(runId string, data []byte) (*types.Summary, []types.Suite, error) {

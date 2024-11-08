@@ -1,7 +1,7 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/fermyon/spin/sdk/go v1.3.1-0.20230911190838-f554a45ce1f2 h1:JXPmmwPBSaU2hkCdT4c6g69X9rAp57yLPd2HdcbncAg=
-github.com/fermyon/spin/sdk/go v1.3.1-0.20230911190838-f554a45ce1f2/go.mod h1:BqOVRDNjh2LtRUX76TF6d0R+GsG7NAncgzcj0Xnjs5I=
+github.com/fermyon/spin-go-sdk v0.0.0-20240918180601-c2d4ef2e0904 h1:56PveUp7kE1r7TYnjN+871XOjCxmp1BRjhBEP/a84ow=
+github.com/fermyon/spin-go-sdk v0.0.0-20240918180601-c2d4ef2e0904/go.mod h1:9GoW1+MR0gN1OEinITtjPOzmu0dur3U6ty3pIH/gN24=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/jmoiron/sqlx v1.3.5 h1:vFFPA71p1o5gAeqtEAwLU4dnX2napprKtHr7PYIcN3g=

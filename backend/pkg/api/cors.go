@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	spinhttp "github.com/fermyon/spin/sdk/go/http"
+	spinhttp "github.com/fermyon/spin-go-sdk/http"
 )
 
 func cors(router *spinhttp.Router) {

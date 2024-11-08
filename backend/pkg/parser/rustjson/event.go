@@ -1,6 +1,6 @@
 package rustjson
 
-import "github.com/rajatjindal/test-dashboard/backend/pkg/types"
+import "github.com/rajatjindal/tests-dashboard/backend/pkg/types"
 
 type eventProcessor struct {
 	Summary *types.Summary

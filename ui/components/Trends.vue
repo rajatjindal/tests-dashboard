@@ -28,7 +28,7 @@
 			<SummaryMd :summary="currentRun"
 								 v-on:hide-details="resetCurrentRun"
 								 :key="currentRun.runId" />
-			<RunMd :runId="currentRun.runId"
+			<SuiteSummaryMd :runId="currentRun.runId"
 						 :showIgnored="showIgnored"
 						 :key="currentRun.runId" />
 		</div>
@@ -51,7 +51,7 @@ import { ChartData } from "chart.js";
 import { getAllRuns } from "@/sdk/backend/api";
 import { Summary } from "@/sdk/backend/types";
 
-const defaultService = "fermyon/cloud-e2e-tests"
+const defaultService = "dagger/ci-tests"
 
 const maxRuns = ref(20)
 const showIgnored = ref(false)

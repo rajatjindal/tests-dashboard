@@ -1,13 +1,16 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
+
   components: [
     {
       path: '~/components',
       pathPrefix: false,
     },
   ],
+
   devtools: { enabled: true },
+
   imports: {
     dirs: [
       // Scan top-level modules
@@ -18,23 +21,30 @@ export default defineNuxtConfig({
       'composables/**'
     ]
   },
+
   postcss: {
     plugins: {
       tailwindcss: {},
       autoprefixer: {},
     },
   },
+
   runtimeConfig: {
     public: {
       baseURL: '/api'
     }
   },
+
   ssr: false,
+
   typescript: {
     strict: true,
     typeCheck: true,
   },
+
   vite: {
     clearScreen: false
-  }
+  },
+
+  compatibilityDate: '2024-11-09'
 })

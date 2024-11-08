@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/fermyon/spin/sdk/go/sqlite"
+	"github.com/fermyon/spin-go-sdk/sqlite"
 	"github.com/jmoiron/sqlx"
-	"github.com/rajatjindal/test-dashboard/backend/pkg/types"
+	"github.com/rajatjindal/tests-dashboard/backend/pkg/types"
 )
 
 func db() *sqlx.DB {
@@ -107,6 +107,40 @@ func FetchHistoryForTestcase(ctx context.Context, testname string) ([]*types.Tes
 	}
 
 	return tests, nil
+}
+
+func FetchSuiteSummaryForRunId(ctx context.Context, runId string) ([]*types.SuiteSummary, error) {
+	conn := db()
+	defer conn.Close()
+
+	rows, err := conn.Queryx(`
+		select 
+			run_id as run_id,
+			suite_id as suite_id, 
+			suite_name as suite_name, 
+			SUM(CASE WHEN result = 'ok' THEN 1 ELSE 0 END) AS passed, 
+			SUM(CASE WHEN result = 'failed' THEN 1 ELSE 0 END) AS failed,
+			SUM(CASE WHEN result = 'ignored' THEN 1 ELSE 0 END) AS ignored 
+		from 
+			tests 
+		where 
+			run_id = ? group by suite_id;`, runId)
+	if err != nil {
+		return nil, err
+	}
+
+	suites := []*types.SuiteSummary{}
+	for rows.Next() {
+		var summary types.SuiteSummary
+		err = rows.StructScan(&summary)
+		if err != nil {
+			return nil, err
+		}
+
+		suites = append(suites, &summary)
+	}
+
+	return suites, nil
 }
 
 func FetchTestsByRunIdAndSuite(ctx context.Context, runId, suite string) ([]*types.Test, error) {
@@ -216,8 +250,11 @@ func IngestTestRun(ctx context.Context, metadata *types.Metadata, summary *types
 	}
 
 	for index, suite := range suites {
+		//TODO(rajatjindal): WHY IS INDEX STARTING FROM 1 HERE?
+		nindex := index - 1
 		for _, test := range suite.TestsTree {
-			_, err := conn.QueryxContext(ctx, "INSERT INTO tests values (?, ?, ?, ?, ?, ?, ?)", test.RunId, fmt.Sprintf("%d", index), test.Name, test.Result, test.Duration, test.Logs, test.CreatedAt)
+			fmt.Println("index is -> %d", index)
+			_, err := conn.QueryxContext(ctx, "INSERT INTO tests values (?, ?, ?, ?, ?, ?, ?, ?)", test.RunId, fmt.Sprintf("%d", nindex), test.SuiteName, test.Name, test.Result, test.Duration, test.Logs, test.CreatedAt)
 			if err != nil {
 				return err
 			}

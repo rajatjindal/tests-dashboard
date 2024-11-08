@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	spinhttp "github.com/fermyon/spin/sdk/go/http"
+	spinhttp "github.com/fermyon/spin-go-sdk/http"
 )
 
 func New() *spinhttp.Router {
@@ -17,6 +17,7 @@ func New() *spinhttp.Router {
 	router.GET("/api/runs/:runId/metadata", fetchMetadataForRun)
 	router.GET("/api/runs/:runId/summary", fetchSummaryForRun)
 	router.GET("/api/runs/:runId/suites", fetchSuitesForRun)
+	router.GET("/api/runs/:runId/suites-summary", fetchSuiteSummaryForRunId)
 	router.GET("/api/runs/:runId/suites/:suiteId/tests", fetchTestsForRunIdAndSuite)
 
 	router.GET("/api/history/log", fetchHistoryForLogLine)
