@@ -1,14 +1,15 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
-
   components: [
     {
       path: '~/components',
       pathPrefix: false,
     },
   ],
-
+  extends: [
+    'github:rajatjindal/nuxt-components'
+  ],
   devtools: { enabled: true },
 
   imports: {
@@ -18,7 +19,8 @@ export default defineNuxtConfig({
       // ... or scan modules nested one level deep with a specific name and file extension
       // 'composables/*/index.{ts,js,mjs,mts}',
       // ... or scan all modules within given directory
-      'composables/**'
+      'composables/**',
+      'node_modules/.c12'
     ]
   },
 
@@ -31,7 +33,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      baseURL: '/api'
+      baseURL: ''
     }
   },
 

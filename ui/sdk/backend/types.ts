@@ -16,6 +16,18 @@ export interface Summary {
 	ignored: number;
 	duration: number;
 	createdAt: string;
+};
+
+export interface SuiteSummary {
+	runId: string;
+	suiteId: string;
+	suiteName: string;
+	result: string;
+	passed: number;
+	failed: number;
+	ignored: number;
+	duration: number;
+	createdAt: string;
 }
 
 export interface SuiteSummary {
@@ -38,4 +50,16 @@ export interface Metadata {
 	link: string;
 	tags: string;
 	createdAt: string;
+}
+
+export interface Dataset {
+	label: string;
+	data: number[];
+	stack: string;
+	backgroundColor: string;
+}
+
+export interface TimeTrendsData {
+	labels: string[];
+	datasets: Dataset[];
 }

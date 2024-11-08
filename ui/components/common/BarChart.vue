@@ -2,6 +2,7 @@
 import { Bar } from 'vue-chartjs'
 import { ChartData } from 'chart.js';
 
+
 const emit = defineEmits(['dataset-clicked'])
 
 const props = defineProps({
@@ -20,8 +21,17 @@ const chartOptions = ref({
 		}
 	},
 	maintainAspectRatio: false,
-	onClick: function (e: any, elements: any[], chart: any) {
-		emit('dataset-clicked', elements[0].index)
+	onClick: function (evt: any, elements: any[], chart: any) {
+		const points = chart.getElementsAtEventForMode(evt, 'nearest', {intersect: true}, true)
+		if (points.length) {
+			const fp = points[0]
+			const dataset = fp.datasetIndex
+			const datapoint = fp.index
+		
+			// console.log(`${dataset} ${datapoint}`)
+			// console.log(props.chartData.datasets[dataset].label)
+			emit('dataset-clicked', datapoint, props.chartData.datasets[dataset].label)
+		}
 	}
 })
 </script>

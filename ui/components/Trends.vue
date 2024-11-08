@@ -25,22 +25,12 @@
 
 		<div class="w-full hidden md:grid"
 				 v-if="currentRun.runId">
-			<SummaryMd :summary="currentRun"
+			<Summary :summary="currentRun"
 								 v-on:hide-details="resetCurrentRun"
 								 :key="currentRun.runId" />
-			<SuiteSummaryMd :runId="currentRun.runId"
+			<SuiteSummary :runId="currentRun.runId"
 						 :showIgnored="showIgnored"
 						 :key="currentRun.runId" />
-		</div>
-
-		<div class="w-full grid md:hidden"
-				 v-if="currentRun.runId">
-			<SummaryMobile :summary="currentRun"
-										 v-on:hide-details="resetCurrentRun"
-										 :key="currentRun.runId" />
-			<RunMobile :runId="currentRun.runId"
-								 :showIgnored="showIgnored"
-								 :key="currentRun.runId" />
 		</div>
 	</div>
 </template>
@@ -49,7 +39,7 @@
 import { formatDate } from "@/sdk/base/myfetch";
 import { ChartData } from "chart.js";
 import { getAllRuns } from "@/sdk/backend/api";
-import { Summary } from "@/sdk/backend/types";
+import type { Summary } from '~/sdk/backend/types'
 
 const defaultService = "dagger/ci-tests"
 
@@ -110,7 +100,7 @@ const toLineChart = function (runs: Summary[]): ChartData<"bar", (number | [numb
 		labels: labels,
 		datasets: [
 			{
-				label: 'ok',
+				label: 'passed',
 				backgroundColor: '#34e8bd',
 				data: passed,
 			},
