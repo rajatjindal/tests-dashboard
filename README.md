@@ -13,6 +13,12 @@ populated on clicking the graph bar
 
 This is developed using `golang/tinygo/nuxtjs/Spin` and deployed on Fermyon Cloud. It makes use of Fermyon's NoOps SQLite integration to store the results.
 
+## Supported formats
+
+- Go JSON
+- Rust JSON
+- JUnit
+
 ## Getting started
 
 Prerequisites:
