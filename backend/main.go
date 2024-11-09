@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	spinhttp "github.com/fermyon/spin/sdk/go/http"
-	"github.com/rajatjindal/test-dashboard/backend/pkg/api"
+	spinhttp "github.com/fermyon/spin-go-sdk/http"
+	"github.com/rajatjindal/tests-dashboard/backend/pkg/api"
 )
 
 func init() {

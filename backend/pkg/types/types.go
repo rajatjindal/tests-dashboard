@@ -3,10 +3,23 @@ package types
 type Test struct {
 	RunId     string  `json:"runId" db:"run_id"`
 	SuiteId   string  `json:"suiteId" db:"suite_id"`
+	SuiteName string  `json:"suiteName" db:"suite_name"`
 	Name      string  `json:"name" db:"name"`
 	Result    string  `json:"result" db:"result"`
 	Duration  float64 `json:"duration" db:"duration"`
 	Logs      string  `json:"logs" db:"logs"`
+	CreatedAt string  `json:"createdAt" db:"created_at"`
+}
+
+type SuiteSummary struct {
+	RunId     string  `json:"runId" db:"run_id"`
+	SuiteId   string  `json:"suiteId" db:"suite_id"`
+	SuiteName string  `json:"suiteName" db:"suite_name"`
+	Result    string  `json:"result" db:"result"`
+	Passed    int64   `json:"passed" db:"passed"`
+	Failed    int64   `json:"failed" db:"failed"`
+	Ignored   int64   `json:"ignored" db:"ignored"`
+	Duration  float64 `json:"duration" db:"duration"`
 	CreatedAt string  `json:"createdAt" db:"created_at"`
 }
 

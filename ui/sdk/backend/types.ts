@@ -18,6 +18,18 @@ export interface Summary {
 	createdAt: string;
 }
 
+export interface SuiteSummary {
+	runId: string;
+	suiteId: string;
+	suiteName: string;
+	result: string;
+	passed: number;
+	failed: number;
+	ignored: number;
+	duration: number;
+	createdAt: string;
+}
+
 export interface Metadata {
 	runId: string;
 	repo: string;

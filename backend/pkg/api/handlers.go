@@ -7,11 +7,12 @@ import (
 	"mime"
 	"net/http"
 
-	spinhttp "github.com/fermyon/spin/sdk/go/http"
-	"github.com/rajatjindal/test-dashboard/backend/pkg/parser/junit"
-	"github.com/rajatjindal/test-dashboard/backend/pkg/parser/rustjson"
-	"github.com/rajatjindal/test-dashboard/backend/pkg/storage"
-	"github.com/rajatjindal/test-dashboard/backend/pkg/types"
+	spinhttp "github.com/fermyon/spin-go-sdk/http"
+	"github.com/rajatjindal/tests-dashboard/backend/pkg/parser/gojson"
+	"github.com/rajatjindal/tests-dashboard/backend/pkg/parser/junit"
+	"github.com/rajatjindal/tests-dashboard/backend/pkg/parser/rustjson"
+	"github.com/rajatjindal/tests-dashboard/backend/pkg/storage"
+	"github.com/rajatjindal/tests-dashboard/backend/pkg/types"
 )
 
 func fetchAllRuns(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
@@ -125,6 +126,8 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 	var suites []types.Suite
 	if metadata.Format == "junit" {
 		summary, suites, err = junit.Ingest(runId, rawResults)
+	} else if metadata.Format == "gojson" {
+		summary, suites, err = gojson.Ingest(runId, rawResults)
 	} else {
 		summary, suites, err = rustjson.Ingest(runId, rawResults)
 	}
@@ -134,6 +137,17 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+func fetchSuiteSummaryForRunId(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	runId := params.ByName("runId")
+
+	tests, err := storage.FetchSuiteSummaryForRunId(r.Context(), runId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	prettyPrint(w, tests)
 }
 
 func fetchTestsForRunIdAndSuite(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {

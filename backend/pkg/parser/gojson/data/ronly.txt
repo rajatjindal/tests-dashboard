@@ -1,0 +1,77 @@
+$ grep -i TestRajat backend/pkg/parser/gojson/data/logs.json.txt
+{"Time":"2024-11-08T07:37:23.094547649Z","Action":"run","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat"}
+{"Time":"2024-11-08T07:37:23.094598316Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat","Output":"=== RUN   TestRajat\n"}
+{"Time":"2024-11-08T07:37:23.094605524Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat","Output":"=== PAUSE TestRajat\n"}
+{"Time":"2024-11-08T07:37:23.094606774Z","Action":"pause","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat"}
+{"Time":"2024-11-08T07:37:23.094906984Z","Action":"cont","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat"}
+{"Time":"2024-11-08T07:37:23.094916025Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat","Output":"=== CONT  TestRajat\n"}
+{"Time":"2024-11-08T07:37:23.095022484Z","Action":"run","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch"}
+{"Time":"2024-11-08T07:37:23.095031109Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"=== RUN   TestRajat/TestScratch\n"}
+{"Time":"2024-11-08T07:37:23.095035026Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"=== PAUSE TestRajat/TestScratch\n"}
+{"Time":"2024-11-08T07:37:23.095036192Z","Action":"pause","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch"}
+{"Time":"2024-11-08T07:37:23.095037401Z","Action":"cont","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch"}
+{"Time":"2024-11-08T07:37:23.095038526Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"=== CONT  TestRajat/TestScratch\n"}
+{"Time":"2024-11-08T07:37:23.097658992Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    print.go:225: Creating new Engine session... OK!\n"}
+{"Time":"2024-11-08T07:37:23.184194621Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    print.go:305: Establishing connection to Engine... OK!\n"}
+{"Time":"2024-11-08T07:37:23.25958176Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m1   : \u001b[0m/.dagger-cli session --label dagger.io/sdk.name:go --label dagger.io/sdk.version:n/a\n"}
+{"Time":"2024-11-08T07:37:23.359288386Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m1   : \u001b[0m/.dagger-cli session --label dagger.io/sdk.name:go --label dagger.io/sdk.version:n/a\u001b[32m DONE\u001b[0m\u001b[90m [0.2s]\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.359315053Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \n"}
+{"Time":"2024-11-08T07:37:23.359319636Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m2   : \u001b[0mcache request: mkfile /schema.json\n"}
+{"Time":"2024-11-08T07:37:23.35932722Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m2   : \u001b[0mcache request: mkfile /schema.json\u001b[32m DONE\u001b[0m\u001b[90m [0.0s]\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.359329053Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \n"}
+{"Time":"2024-11-08T07:37:23.359330303Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m3   : \u001b[0mmkfile /schema.json\n"}
+{"Time":"2024-11-08T07:37:23.359333636Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m3   : \u001b[0mmkfile /schema.json\u001b[32m DONE\u001b[0m\u001b[90m [0.0s]\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.35933597Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \n"}
+{"Time":"2024-11-08T07:37:23.359337261Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m4   : \u001b[0m\u001b[1mcontainer\u001b[0m\u001b[2m: Container!\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.359338678Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m4   : \u001b[0m\u001b[1mcontainer\u001b[0m\u001b[32m DONE\u001b[0m\u001b[90m [0.0s]\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.359340178Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \n"}
+{"Time":"2024-11-08T07:37:23.35934172Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m5   : \u001b[0mContainer.\u001b[1mrootfs\u001b[0m\u001b[2m: Directory!\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.359343178Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m5   : \u001b[0mContainer.\u001b[1mrootfs\u001b[0m\u001b[32m DONE\u001b[0m\u001b[90m [0.0s]\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.35934447Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \n"}
+{"Time":"2024-11-08T07:37:23.359345803Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m6   : \u001b[0mDirectory.\u001b[1mentries\u001b[0m\u001b[2m: [String!]!\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.359347345Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m6   : \u001b[0mDirectory.\u001b[1mentries\u001b[0m\u001b[32m DONE\u001b[0m\u001b[90m [0.0s]\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.368267996Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \n"}
+{"Time":"2024-11-08T07:37:24.360228914Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    twriter.go:55: \n"}
+{"Time":"2024-11-08T07:37:24.360313205Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat","Output":"--- PASS: TestRajat (0.00s)\n"}
+{"Time":"2024-11-08T07:37:24.360323706Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    --- PASS: TestRajat/TestScratch (1.27s)\n"}
+{"Time":"2024-11-08T07:37:24.860677386Z","Action":"pass","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Elapsed":1.27}
+{"Time":"2024-11-08T07:37:24.860770511Z","Action":"pass","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat","Elapsed":0}
+{"Time":"2024-11-08T07:37:23.094547649Z","Action":"run","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat"}
+{"Time":"2024-11-08T07:37:23.094598316Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat","Output":"=== RUN   TestRajat\n"}
+{"Time":"2024-11-08T07:37:23.094605524Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat","Output":"=== PAUSE TestRajat\n"}
+{"Time":"2024-11-08T07:37:23.094606774Z","Action":"pause","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat"}
+{"Time":"2024-11-08T07:37:23.094906984Z","Action":"cont","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat"}
+{"Time":"2024-11-08T07:37:23.094916025Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat","Output":"=== CONT  TestRajat\n"}
+{"Time":"2024-11-08T07:37:23.095022484Z","Action":"run","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch"}
+{"Time":"2024-11-08T07:37:23.095031109Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"=== RUN   TestRajat/TestScratch\n"}
+{"Time":"2024-11-08T07:37:23.095035026Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"=== PAUSE TestRajat/TestScratch\n"}
+{"Time":"2024-11-08T07:37:23.095036192Z","Action":"pause","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch"}
+{"Time":"2024-11-08T07:37:23.095037401Z","Action":"cont","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch"}
+{"Time":"2024-11-08T07:37:23.095038526Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"=== CONT  TestRajat/TestScratch\n"}
+{"Time":"2024-11-08T07:37:23.097658992Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    print.go:225: Creating new Engine session... OK!\n"}
+{"Time":"2024-11-08T07:37:23.184194621Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    print.go:305: Establishing connection to Engine... OK!\n"}
+{"Time":"2024-11-08T07:37:23.25958176Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m1   : \u001b[0m/.dagger-cli session --label dagger.io/sdk.name:go --label dagger.io/sdk.version:n/a\n"}
+{"Time":"2024-11-08T07:37:23.359288386Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m1   : \u001b[0m/.dagger-cli session --label dagger.io/sdk.name:go --label dagger.io/sdk.version:n/a\u001b[32m DONE\u001b[0m\u001b[90m [0.2s]\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.359315053Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \n"}
+{"Time":"2024-11-08T07:37:23.359319636Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m2   : \u001b[0mcache request: mkfile /schema.json\n"}
+{"Time":"2024-11-08T07:37:23.35932722Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m2   : \u001b[0mcache request: mkfile /schema.json\u001b[32m DONE\u001b[0m\u001b[90m [0.0s]\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.359329053Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \n"}
+{"Time":"2024-11-08T07:37:23.359330303Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m3   : \u001b[0mmkfile /schema.json\n"}
+{"Time":"2024-11-08T07:37:23.359333636Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m3   : \u001b[0mmkfile /schema.json\u001b[32m DONE\u001b[0m\u001b[90m [0.0s]\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.35933597Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \n"}
+{"Time":"2024-11-08T07:37:23.359337261Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m4   : \u001b[0m\u001b[1mcontainer\u001b[0m\u001b[2m: Container!\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.359338678Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m4   : \u001b[0m\u001b[1mcontainer\u001b[0m\u001b[32m DONE\u001b[0m\u001b[90m [0.0s]\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.359340178Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \n"}
+{"Time":"2024-11-08T07:37:23.35934172Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m5   : \u001b[0mContainer.\u001b[1mrootfs\u001b[0m\u001b[2m: Directory!\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.359343178Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m5   : \u001b[0mContainer.\u001b[1mrootfs\u001b[0m\u001b[32m DONE\u001b[0m\u001b[90m [0.0s]\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.35934447Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \n"}
+{"Time":"2024-11-08T07:37:23.359345803Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m6   : \u001b[0mDirectory.\u001b[1mentries\u001b[0m\u001b[2m: [String!]!\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.359347345Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \u001b[95m6   : \u001b[0mDirectory.\u001b[1mentries\u001b[0m\u001b[32m DONE\u001b[0m\u001b[90m [0.0s]\u001b[0m\n"}
+{"Time":"2024-11-08T07:37:23.368267996Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    multi.go:85: \n"}
+{"Time":"2024-11-08T07:37:24.360228914Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    twriter.go:55: \n"}
+{"Time":"2024-11-08T07:37:24.360313205Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat","Output":"--- PASS: TestRajat (0.00s)\n"}
+{"Time":"2024-11-08T07:37:24.360323706Z","Action":"output","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Output":"    --- PASS: TestRajat/TestScratch (1.27s)\n"}
+{"Time":"2024-11-08T07:37:24.860677386Z","Action":"pass","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat/TestScratch","Elapsed":1.27}
+{"Time":"2024-11-08T07:37:24.860770511Z","Action":"pass","Package":"github.com/dagger/dagger/core/integration","Test":"TestRajat","Elapsed":0}
+~/go/src/github.com/rajatjindal/tests-dashboard (cloud-docker/ap-south-1) git:(dagger) ✗ 
+$ 

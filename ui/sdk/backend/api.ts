@@ -1,4 +1,4 @@
-import { Metadata, Summary, Test} from './types'
+import { Metadata, Summary, SuiteSummary, Test} from './types'
 import { myfetch } from '@/sdk/base/myfetch';
 
 export const getAllRuns = async (repo: string): Promise<Summary[]> => {
@@ -24,6 +24,13 @@ export const getSummary = async (runId: string): Promise<Summary> => {
 
 export const getSuitesForRun = async (runId: string): Promise<string[]> => {
 	const path = `/api/runs/${runId}/suites`
+	return await myfetch(path, {
+		method: 'GET'
+	});
+}
+
+export const getSuiteSummaryForRun = async (runId: string): Promise<SuiteSummary[]> => {
+	const path = `/api/runs/${runId}/suites-summary`
 	return await myfetch(path, {
 		method: 'GET'
 	});
