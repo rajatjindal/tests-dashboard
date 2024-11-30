@@ -22,10 +22,18 @@ type eventProcessor struct {
 }
 
 func (p *eventProcessor) processEvent(runId string, event Event) {
+	// the package which has no tests
+	if event.Test == "" {
+		return
+	}
+
 	suiteName := findSuiteName(event.Test)
 	suite, ok := p.suites[suiteName]
 	if !ok {
 		suite = &types.Suite{
+			RunId:     runId,
+			SuiteName: suiteName,
+			Result:    "ok",
 			AllTests:  map[string]*types.Test{},
 			TestsTree: []*types.Test{},
 		}
@@ -41,6 +49,8 @@ func processEvent(p *types.Suite, runId string, suiteName string, event Event) {
 	case "run":
 		//suite is starting
 		if event.Test == suiteName {
+			p.StartTime = event.Time
+			p.CreatedAt = event.Time.UTC().Format(time.RFC3339)
 			return
 		}
 
@@ -50,20 +60,55 @@ func processEvent(p *types.Suite, runId string, suiteName string, event Event) {
 		p.AllTests[primaryKey] = test
 		p.TestsTree = append(p.TestsTree, test)
 	case "output":
+		if event.Test == suiteName {
+			return
+		}
+
 		test := findTest(p, runId, event)
-		test.Logs += event.Output
+		test.LogsBuilder.WriteString(event.Output)
 	case "pass":
+		p.Passed = p.Passed + 1
+
+		if event.Test == suiteName {
+			p.EndTime = event.Time
+			p.Result = "ok"
+			p.Duration = p.EndTime.Sub(p.StartTime).Seconds()
+			return
+		}
+
 		test := findTest(p, runId, event)
 		test.Result = "ok"
 		test.Duration = event.Elapsed
+		test.Logs = test.LogsBuilder.String()
 	case "fail":
+		p.Failed = p.Failed + 1
+
+		if event.Test == suiteName {
+			p.EndTime = event.Time
+			p.Result = "failed"
+			p.Duration = p.EndTime.Sub(p.StartTime).Seconds()
+			return
+		}
+
 		test := findTest(p, runId, event)
 		test.Result = "failed"
 		test.Duration = event.Elapsed
+		test.Logs = test.LogsBuilder.String()
 	case "skip":
+		p.Ignored = p.Ignored + 1
+
+		if event.Test == suiteName {
+			p.Ignored++
+			p.Result = "ignored"
+			p.EndTime = event.Time
+			p.Duration = p.EndTime.Sub(p.StartTime).Seconds()
+			return
+		}
+
 		test := findTest(p, runId, event)
 		test.Result = "ignored"
 		test.Duration = event.Elapsed
+		test.Logs = test.LogsBuilder.String()
 	}
 }
 
@@ -74,8 +119,9 @@ func findTest(p *types.Suite, runId string, event Event) *types.Test {
 	}
 
 	return &types.Test{
-		Name:  getHumanReadableName(event.Test),
-		RunId: runId,
+		Name:      getHumanReadableName(event.Test),
+		RunId:     runId,
+		CreatedAt: event.Time.UTC().Format(time.RFC3339),
 	}
 }
 

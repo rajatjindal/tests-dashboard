@@ -163,6 +163,21 @@ func fetchTestsForRunIdAndSuite(w http.ResponseWriter, r *http.Request, params s
 	prettyPrint(w, tests)
 }
 
+func fetchTimeTrendsForSuite(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	suiteName := r.URL.Query().Get("suiteName")
+	trends, err := storage.FetchTimeTrendsForSuite(r.Context(), &types.SuiteTrendsFilter{
+		SuiteName: suiteName,
+		PerPage:   -1,
+		Page:      0,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	prettyPrint(w, trends)
+}
+
 func fetchHistoryForLogLine(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
 	logLine := r.URL.Query().Get("logLine")
 

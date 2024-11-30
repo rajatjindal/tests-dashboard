@@ -1,14 +1,20 @@
 package types
 
+import (
+	"strings"
+	"time"
+)
+
 type Test struct {
-	RunId     string  `json:"runId" db:"run_id"`
-	SuiteId   string  `json:"suiteId" db:"suite_id"`
-	SuiteName string  `json:"suiteName" db:"suite_name"`
-	Name      string  `json:"name" db:"name"`
-	Result    string  `json:"result" db:"result"`
-	Duration  float64 `json:"duration" db:"duration"`
-	Logs      string  `json:"logs" db:"logs"`
-	CreatedAt string  `json:"createdAt" db:"created_at"`
+	RunId       string          `json:"runId" db:"run_id"`
+	SuiteId     string          `json:"suiteId" db:"suite_id"`
+	SuiteName   string          `json:"suiteName" db:"suite_name"`
+	Name        string          `json:"name" db:"name"`
+	Result      string          `json:"result" db:"result"`
+	Duration    float64         `json:"duration" db:"duration"`
+	Logs        string          `json:"logs" db:"logs"`
+	LogsBuilder strings.Builder `json:"-" db:"-"`
+	CreatedAt   string          `json:"createdAt" db:"created_at"`
 }
 
 type SuiteSummary struct {
@@ -58,6 +64,43 @@ type Event struct {
 }
 
 type Suite struct {
+	RunId     string  `json:"runId" db:"run_id"`
+	SuiteId   string  `json:"suiteId" db:"suite_id"`
+	SuiteName string  `json:"suiteName" db:"suite_name"`
+	Result    string  `json:"result" db:"result"`
+	Passed    int64   `json:"passed" db:"passed"`
+	Failed    int64   `json:"failed" db:"failed"`
+	Ignored   int64   `json:"ignored" db:"ignored"`
+	Duration  float64 `json:"duration" db:"duration"`
+	CreatedAt string  `json:"createdAt" db:"created_at"`
+
+	StartTime time.Time `json:"startTime" db:"-"`
+	EndTime   time.Time `json:"endTime" db:"-"`
+
 	AllTests  map[string]*Test `json:"-" db:"-"`
-	TestsTree []*Test
+	TestsTree []*Test          `json:"-" db:"-"`
+}
+
+type SuiteTrendsFilter struct {
+	SuiteName string   `json:"suiteName"`
+	Tags      []string `json:"tags"`
+	Page      int      `json:"page"`
+	PerPage   int      `json:"perPage"`
+}
+
+type SuiteTimeTrendEntry struct {
+	RunId     string  `json:"runId" db:"run_id"`
+	SuiteName string  `json:"suiteName" db:"suite_name"`
+	Duration  float64 `json:"duration" db:"duration"`
+}
+
+type Dataset struct {
+	Label           string    `json:"label"`
+	Data            []float64 `json:"data"`
+	Stack           string    `json:"stack"`
+	BackgroundColor string    `json:"backgroundColor"`
+}
+type TimeTrendsData struct {
+	Labels   []string  `json:"labels"`
+	Datasets []Dataset `json:"datasets"`
 }

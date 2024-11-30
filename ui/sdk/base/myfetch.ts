@@ -2,11 +2,10 @@ import { ofetch } from 'ofetch'
 import { MomentInput } from 'moment'
 import moment from 'moment'
 
-const runtimeConfig = useRuntimeConfig().public.baseURL
-const baseURL = ""
+const runtimeConfig = useRuntimeConfig().public
 
 export const myfetch = ofetch.create({
-    baseURL: baseURL,
+    baseURL: runtimeConfig.baseURL,
     retry: 0,
     async onRequest({ request, options }) {
         console.log('[fetch request]', `[${options.method} ${request}]`)

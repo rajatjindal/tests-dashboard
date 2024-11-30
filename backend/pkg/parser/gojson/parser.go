@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/rajatjindal/tests-dashboard/backend/pkg/types"
 )
@@ -41,17 +40,22 @@ func Ingest(runId string, data []byte) (*types.Summary, []types.Suite, error) {
 	}
 
 	summary := &types.Summary{
-		RunId:     runId,
-		Result:    "pass", //assume pass to start with
-		Passed:    0,
-		Failed:    0,
-		Ignored:   0,
-		Duration:  0,
-		CreatedAt: time.Now().Format(time.RFC3339),
+		RunId:    runId,
+		Result:   "pass", //assume pass to start with
+		Passed:   0,
+		Failed:   0,
+		Ignored:  0,
+		Duration: 0,
 	}
 
 	allSuites := []types.Suite{}
 	for _, s := range p.suites {
+		if summary.CreatedAt == "" {
+			// start time of first suite
+			// while this is not accurate, but should be good enough
+			summary.CreatedAt = s.CreatedAt
+		}
+
 		allSuites = append(allSuites, *s)
 		for _, t := range s.TestsTree {
 			switch t.Result {

@@ -5,7 +5,6 @@ WORKDIR /app
 
 COPY spin.toml spin.toml
 COPY backend/main.wasm backend/main.wasm
-COPY redirector/redirect.wasm redirector/redirect.wasm
 COPY runtimeconfig.toml runtimeconfig.toml
 COPY ui/.output/public ui/.output/public
 
