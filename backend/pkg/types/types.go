@@ -41,6 +41,8 @@ type Summary struct {
 
 type Metadata struct {
 	RunId     string `json:"runId" db:"run_id"`
+	CommitSha string `json:"commitSha" db:"commit_sha"`
+	JobName   string `json:"jobName" db:"job_name"`
 	Repo      string `json:"repo" db:"repo"`
 	Branch    string `json:"branch" db:"branch"`
 	Format    string `json:"format" db:"format"`
@@ -90,6 +92,8 @@ type SuiteTrendsFilter struct {
 
 type SuiteTimeTrendEntry struct {
 	RunId     string  `json:"runId" db:"run_id"`
+	CommitSha string  `json:"commitSha" db:"commit_sha"`
+	JobName   string  `json:"jobName" db:"job_name"`
 	SuiteName string  `json:"suiteName" db:"suite_name"`
 	Duration  float64 `json:"duration" db:"duration"`
 }

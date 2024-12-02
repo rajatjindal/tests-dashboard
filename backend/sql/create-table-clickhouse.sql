@@ -43,6 +43,8 @@ PRIMARY KEY (run_id, suite_id, suite_name);
 CREATE TABLE metadata
 (
     run_id String,
+		commit_sha String,
+		job_name String,
 		repo String,
 		branch String,
 		format String,		
