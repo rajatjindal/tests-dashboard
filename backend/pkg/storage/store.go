@@ -244,7 +244,7 @@ func IngestTestRun(ctx context.Context, metadata *types.Metadata, summary *types
 	conn := db()
 	defer conn.Close()
 
-	_, err := conn.QueryxContext(ctx, "INSERT INTO metadata values (?, ?, ?, ?, ?, ?, ?)", metadata.RunId, metadata.Repo, metadata.Branch, metadata.Format, metadata.Link, metadata.Tags, metadata.CreatedAt)
+	_, err := conn.QueryxContext(ctx, "INSERT INTO metadata values (?, ?, ?, ?, ?, ?, ?, ?, ?)", metadata.RunId, metadata.CommitSha, metadata.JobName, metadata.Repo, metadata.Branch, metadata.Format, metadata.Link, metadata.Tags, metadata.CreatedAt)
 	if err != nil {
 		return err
 	}
@@ -291,7 +291,7 @@ func FetchTimeTrendsForSuite(ctx context.Context, filter *types.SuiteTrendsFilte
 	clause, params := getClauseAndParamsFromFilter(filter)
 	index := len(params) + 1
 
-	query := "select run_id, suite_name, duration from suite_summary"
+	query := "select suite_summary.run_id as run_id, metadata.commit_sha as commit_sha, metadata.job_name, suite_summary.suite_name as suite_name, suite_summary.duration as duration from suite_summary, metadata"
 	if len(clause) > 0 {
 		query += " WHERE "
 		query += strings.Join(clause, " AND ")
@@ -304,7 +304,7 @@ func FetchTimeTrendsForSuite(ctx context.Context, filter *types.SuiteTrendsFilte
 		perPage = defaultPerPage
 	}
 
-	query += " order by suite_name asc"
+	query += " order by suite_summary.suite_name asc"
 	if filter.Page > 0 {
 		query += " offset ?"
 		params = append(params, filter.Page*perPage)
@@ -336,34 +336,40 @@ func FetchTimeTrendsForSuite(ctx context.Context, filter *types.SuiteTrendsFilte
 	// TODO(rajatjindal): in the latest execution find the slowest 10 executions
 	// then for all other runs prepare the execution times for those 10 suites only
 
-	datamap := map[string]map[string]*types.SuiteTimeTrendEntry{}
+	datamap := map[string]map[string]map[string]*types.SuiteTimeTrendEntry{}
 	for _, item := range items {
-		_, ok := datamap[item.RunId]
+		_, ok := datamap[item.CommitSha]
 		if !ok {
-			datamap[item.RunId] = map[string]*types.SuiteTimeTrendEntry{}
+			datamap[item.CommitSha] = map[string]map[string]*types.SuiteTimeTrendEntry{}
 		}
 
-		datamap[item.RunId][item.SuiteName] = item
+		_, ok = datamap[item.CommitSha][item.RunId]
+		if !ok {
+			datamap[item.CommitSha][item.RunId] = map[string]*types.SuiteTimeTrendEntry{}
+		}
+
+		datamap[item.CommitSha][item.RunId][item.SuiteName] = item
 	}
 
 	sumdata := &types.TimeTrendsData{}
 	suiteMap := map[string]types.Dataset{}
-	for runId, suitesMap := range datamap {
-		sumdata.Labels = append(sumdata.Labels, runId)
-
-		for suiteName, entry := range suitesMap {
-			existing, ok := suiteMap[suiteName]
-			if !ok {
-				existing = types.Dataset{
-					Label:           suiteName,
-					Data:            []float64{},
-					Stack:           "stack 0",
-					BackgroundColor: fmt.Sprintf("rgb(%d,%d,%d)", rand.IntN(255), rand.IntN(255), rand.IntN(255)),
+	for commitSha, abcMap := range datamap {
+		sumdata.Labels = append(sumdata.Labels, commitSha)
+		for _, suitesMap := range abcMap {
+			for suiteName, entry := range suitesMap {
+				existing, ok := suiteMap[entry.RunId+suiteName]
+				if !ok {
+					existing = types.Dataset{
+						Label:           entry.JobName + " : " + entry.SuiteName,
+						Data:            []float64{},
+						Stack:           entry.RunId,
+						BackgroundColor: fmt.Sprintf("rgb(%d,%d,%d)", rand.IntN(255), rand.IntN(255), rand.IntN(255)),
+					}
 				}
-			}
-			existing.Data = append(existing.Data, entry.Duration)
+				existing.Data = append(existing.Data, entry.Duration)
 
-			suiteMap[suiteName] = existing
+				suiteMap[entry.RunId+suiteName] = existing
+			}
 		}
 	}
 
@@ -378,9 +384,19 @@ func getClauseAndParamsFromFilter(filter *types.SuiteTrendsFilter) ([]string, []
 	clause := []string{}
 	params := []interface{}{}
 
+	clause = append(clause, "suite_summary.run_id = metadata.run_id")
 	if filter.SuiteName != "" {
-		clause = append(clause, "suite_name = ?")
-		params = append(params, filter.SuiteName)
+		parts := strings.Split(filter.SuiteName, " : ")
+		if len(parts) > 1 {
+			clause = append(clause, "metadata.job_name = ?")
+			params = append(params, parts[0])
+
+			clause = append(clause, "suite_summary.suite_name = ?")
+			params = append(params, parts[1])
+		} else {
+			clause = append(clause, "suite_summary.suite_name = ?")
+			params = append(params, parts[0])
+		}
 	}
 
 	return clause, params

@@ -44,6 +44,8 @@ export interface SuiteSummary {
 
 export interface Metadata {
 	runId: string;
+	commitSha: string;
+	jobName: string;
 	repo: string;
 	branch: string;
 	format: string;
