@@ -1,0 +1,45 @@
+apiVersion: core.spinkube.dev/v1alpha1
+kind: SpinApp
+metadata:
+  name: tests-dashboard
+  namespace: tests-dashboard
+spec:
+  image: "ghcr.io/rajatjindal/tests-dashboard-oci:9a0f51c168cafa307310f68751a040d84738fbf1"
+  replicas: 1
+  executor: containerd-shim-spin
+  volumes:
+    - name: persistent-volume
+      persistentVolumeClaim:
+        claimName: persistent-pv-claim
+  volumeMounts:
+    - name: persistent-volume
+      mountPath: "/mnt/data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: persistent-pv-claim
+  namespace: tests-dashboard
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1000Mi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-volume
+  namespace: tests-dashboard
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1000Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
