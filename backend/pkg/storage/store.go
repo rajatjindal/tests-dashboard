@@ -240,29 +240,80 @@ func FetchAllRuns(ctx context.Context, repo string) ([]*types.Summary, error) {
 	return items, nil
 }
 
+type Tag struct {
+	Key            string   `json:"key" db:"key"`
+	Values         []string `json:"values"`
+	CommaSepValues string   `json:"-" db:"comma_sep_values"` // used for scanning from db
+}
+
+func GetTagsForQuery(ctx context.Context) ([]Tag, error) {
+	conn := db()
+	defer conn.Close()
+
+	query := `WITH json_parsed AS (
+    SELECT
+        json_each.key AS key,
+        json_each.value AS value
+    FROM
+        metadata,
+        json_each(tags)
+)
+SELECT
+    key,
+    GROUP_CONCAT(DISTINCT value) AS comma_sep_values
+FROM
+    json_parsed
+GROUP BY
+    key;
+`
+	rows, err := conn.QueryxContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	items := []Tag{}
+	for rows.Next() {
+		var item Tag
+		err = rows.StructScan(&item)
+		if err != nil {
+			return nil, err
+		}
+
+		item.Values = strings.Split(item.CommaSepValues, ",")
+		items = append(items, item)
+	}
+
+	return items, nil
+}
+
 func IngestTestRun(ctx context.Context, metadata *types.Metadata, summary *types.Summary, suites []types.Suite) error {
 	conn := db()
 	defer conn.Close()
 
-	_, err := conn.QueryxContext(ctx, "INSERT INTO metadata values (?, ?, ?, ?, ?, ?, ?, ?, ?)", metadata.RunId, metadata.CommitSha, metadata.JobName, metadata.Repo, metadata.Branch, metadata.Format, metadata.Link, metadata.Tags, metadata.CreatedAt)
+	tags, err := metadata.Tags.Value()
 	if err != nil {
 		return err
 	}
 
-	_, err = conn.QueryxContext(ctx, "INSERT INTO summary values (?, ?, ?, ?, ?, ?, ?)", summary.RunId, summary.Result, summary.Passed, summary.Failed, summary.Ignored, summary.Duration, summary.CreatedAt)
+	_, err = conn.QueryxContext(ctx, "INSERT INTO metadata (run_id, commit_sha, repo, branch, format, link, tags, created_at) values (?, ?, ?, ?, ?, ?, ?, ?)", metadata.RunId, metadata.CommitSha, metadata.Repo, metadata.Branch, metadata.Format, metadata.Link, tags, metadata.CreatedAt)
+	if err != nil {
+		return err
+	}
+
+	_, err = conn.QueryxContext(ctx, "INSERT INTO summary (run_id, result, passed, failed, ignored, duration, created_at) values (?, ?, ?, ?, ?, ?, ?)", summary.RunId, summary.Result, summary.Passed, summary.Failed, summary.Ignored, summary.Duration, summary.CreatedAt)
 	if err != nil {
 		return err
 	}
 
 	for index, suite := range suites {
-		_, err := conn.QueryxContext(ctx, "INSERT INTO suite_summary values (?, ?, ?, ?, ?, ?, ?, ?, ?)", suite.RunId, index, suite.SuiteName, suite.Result, suite.Passed, suite.Failed, suite.Ignored, suite.Duration, suite.CreatedAt)
+		_, err := conn.QueryxContext(ctx, "INSERT INTO suite_summary (run_id, suite_id, suite_name, result, passed, failed, ignored, duration, created_at) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", suite.RunId, index, suite.SuiteName, suite.Result, suite.Passed, suite.Failed, suite.Ignored, suite.Duration, suite.CreatedAt)
 		if err != nil {
 			return err
 		}
 
 		for _, test := range suite.TestsTree {
 			// fmt.Println("index is -> %d", index)
-			_, err := conn.QueryxContext(ctx, "INSERT INTO tests values (?, ?, ?, ?, ?, ?, ?, ?)", test.RunId, fmt.Sprintf("%d", index), test.SuiteName, test.Name, test.Result, test.Duration, test.Logs, test.CreatedAt)
+			_, err := conn.QueryxContext(ctx, "INSERT INTO tests (run_id, suite_id, suite_name, name, result, duration, logs, created_at) values (?, ?, ?, ?, ?, ?, ?, ?)", test.RunId, fmt.Sprintf("%d", index), test.SuiteName, test.Name, test.Result, test.Duration, test.Logs, test.CreatedAt)
 			if err != nil {
 				return err
 			}
