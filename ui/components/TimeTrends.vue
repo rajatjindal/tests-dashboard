@@ -1,11 +1,10 @@
 <template>
 	<div class="mx-auto w-11/12">
-		<div class="mt-5">
-			<TagsQuery />
+		<div class="mt-5 text-darkmode-blue-contrast1">
+			<CommonQuery v-on:updrepo="updateRepo" v-on:updtags="updateTags" :repo="repo" :tags="tags" />
 		</div>
 		
-		<div
-				 class="w-full md:w-full gap-4 border border-darkplum px-4 py-4 mx-auto rounded bg-indigo-50 shadow-2xl mt-10">
+		<div class="w-full md:w-full gap-4 border border-darkplum px-4 py-4 mx-auto rounded bg-indigo-50 shadow-2xl mt-10">
 			<BarChart v-if="timetrends && timetrends.datasets && timetrends.datasets.length > 0" class="w-full h-screen"
 								key="timetrends"
                 v-on:dataset-clicked="showRunWithIndex"
@@ -18,11 +17,22 @@
 import {  getTimeTrendsForSuites } from "@/sdk/backend/api";
 import type {  TimeTrendsData } from '~/sdk/backend/types'
 
+const repo = ref("dagger/ci-tests")
+const tags = ref(new Map<string, string>())
 const suiteName = useRoute().query["suiteName"]?.toString() ?? ""
+
 const timetrends = ref({} as TimeTrendsData)
 
 onBeforeMount(async () => {
-	timetrends.value = await getTimeTrendsForSuites(suiteName)
+	timetrends.value = await getTimeTrendsForSuites(repo.value, suiteName, tags.value)
+})
+
+watch(() => repo.value, async (currentValue, oldValue) => {
+	timetrends.value = await getTimeTrendsForSuites(currentValue, suiteName, tags.value)
+})
+
+watch(() => tags.value, async (currentValue, oldValue) => {
+	timetrends.value = await getTimeTrendsForSuites(repo.value, suiteName, currentValue)
 })
 
 const showRunWithIndex = async function (_: number, label: string) {
@@ -32,5 +42,14 @@ const showRunWithIndex = async function (_: number, label: string) {
       target: '_blank',
     }
   })
+}
+
+const updateRepo = function(val: string) {
+	repo.value = val
+}
+
+const updateTags = function(val: Map<string, string>) {
+	console.log("final upd tags", val)
+	tags.value = val
 }
 </script>

@@ -1,6 +1,5 @@
 import { Metadata, Summary, SuiteSummary, Test, TimeTrendsData, Tag } from './types'
 import { myfetch } from '@/sdk/base/myfetch';
-import type { SelectFormatter } from "@rajatjindal1983/crud-sdk/base/formatter"
 export const getAllRuns = async (repo: string): Promise<Summary[]> => {
 	const path = `/api/runs?repo=${repo}`
 	return await myfetch(path, {
@@ -43,65 +42,38 @@ export const getTestsForRunAndSuite = async (runId: string, suiteId: string): Pr
 	});
 }
 
-export const getTestsForLogLine = async (logLine: string): Promise<Test[]> => {
-	const path = `/api/history/log?logLine=${logLine}`
+export const getTestsForLogLine = async (repo: string, logLine: string, tags: Map<string, string>): Promise<Test[]> => {
+	const path = `/api/history/log?logLine=${logLine}&repo=${repo}&${tagsToQueryString(tags)}`
 	return await myfetch(path, {
 		method: 'GET'
 	});
 }
 
-export const getTestsForTestcase = async (testname: string): Promise<Test[]> => {
-	const path = `/api/history/test?name=${testname}`
+export const getTestsForTestcase = async (repo: string, testname: string, tags: Map<string, string>): Promise<Test[]> => {
+	const path = `/api/history/test?name=${testname}&repo=${repo}&${tagsToQueryString(tags)}`
 	return await myfetch(path, {
 		method: 'GET'
 	});
 }
 
-export const getTimeTrendsForSuites = async (suiteName: string): Promise<TimeTrendsData> => {
-	const path = `/api/trends/suites/time?suiteName=${suiteName}`
+export const getTimeTrendsForSuites = async (repo: string, suiteName: string, tags: Map<string, string>): Promise<TimeTrendsData> => {
+	const path = `/api/trends/suites/time?suiteName=${suiteName}&repo=${repo}&${tagsToQueryString(tags)}`
 	return await myfetch(path, {
 		method: 'GET'
 	});
 }
 
-export const getTags = async (): Promise<Tag[]> => {
-	return await myfetch(`/api/tags`, {
+export const getTags = async (repo: string): Promise<Tag[]> => {
+	return await myfetch(`/api/tags?repo=${repo}`, {
 		method: 'GET'
 	});
 }
 
-export class TagsFormatter implements SelectFormatter<Tag> {
-	hello(): string {
-		return "hello from tags formatter"
+const tagsToQueryString = function(tags: Map<string, string>): string {
+	var slice: string[] = []
+	for (let [key, value] of tags) {
+		slice.push(`tag-${key}=${value}`)
 	}
 
-	resetPin(): void {
-		//localStorage.removeItem('pinned-tag')
-	}
-	
-	setPin(item: Tag): void {
-		//localStorage.setItem('pinned-tag', JSON.stringify(item))
-	}
-
-	getPin(): Tag {
-		// const raw = localStorage.getItem('pinned-company')
-		// if (!raw) {
-		// 	return null!
-		// }
-
-		// return JSON.parse(raw)
-
-		return JSON.parse({})
-	}
-
-	slug(): string {
-		return "tag"
-	}
-
-	toSelectOption(item: Company): SelectOption {
-		return {
-			key: item ? item.key : "",
-			title: item ? item.key : ""
-		}
-	}
+	return slice.join("&")
 }

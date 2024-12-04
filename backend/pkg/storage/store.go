@@ -19,14 +19,25 @@ func db() *sqlx.DB {
 	return sqlx.NewDb(conn, "sqlite")
 }
 
-func FetchAllTests(ctx context.Context) ([]*types.Test, error) {
+func FetchAllTests(ctx context.Context, filter types.CommonFilter) ([]*types.Test, error) {
 	conn := db()
 	if conn == nil {
 		return nil, fmt.Errorf("failed to read db")
 	}
 	defer conn.Close()
 
-	rows, err := conn.Queryx("select * from tests;")
+	query := "select tests.* from tests, metadata where metadata.run_id = tests.run_id"
+	clause, params, err := getClauseAndParamsFromCommonFilter(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(clause) > 0 {
+		query += " AND "
+		query += strings.Join(clause, " AND ")
+	}
+
+	rows, err := conn.Queryx(query, params...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +79,22 @@ func FetchSuitesForRun(ctx context.Context, runId string) ([]string, error) {
 	return items, nil
 }
 
-func FetchHistoryForLogLine(ctx context.Context, logLine string) ([]*types.Test, error) {
+func FetchHistoryForLogLine(ctx context.Context, logLine string, filter types.CommonFilter) ([]*types.Test, error) {
 	conn := db()
 	defer conn.Close()
 
-	rows, err := conn.Queryx("select * from tests where lower(logs) LIKE ?", "%"+logLine+"%")
+	query := "select tests.* from tests, metadata where metadata.run_id = tests.run_id AND lower(tests.logs) LIKE ?"
+	clause, params, err := getClauseAndParamsFromCommonFilter(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(clause) > 0 {
+		query += " AND "
+		query += strings.Join(clause, " AND ")
+	}
+
+	rows, err := conn.Queryx(query, append([]interface{}{"%" + logLine + "%"}, params...)...)
 	if err != nil {
 		return nil, err
 	}
@@ -91,11 +113,22 @@ func FetchHistoryForLogLine(ctx context.Context, logLine string) ([]*types.Test,
 	return tests, nil
 }
 
-func FetchHistoryForTestcase(ctx context.Context, testname string) ([]*types.Test, error) {
+func FetchHistoryForTestcase(ctx context.Context, testname string, filter types.CommonFilter) ([]*types.Test, error) {
 	conn := db()
 	defer conn.Close()
 
-	rows, err := conn.Queryx("select * from tests where lower(name) LIKE ?", "%"+testname+"%")
+	query := "select tests.* from tests, metadata where metadata.run_id = tests.run_id AND lower(tests.name) LIKE ?"
+	clause, params, err := getClauseAndParamsFromCommonFilter(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(clause) > 0 {
+		query += " AND "
+		query += strings.Join(clause, " AND ")
+	}
+
+	rows, err := conn.Queryx(query, append([]interface{}{"%" + testname + "%"}, params...)...)
 	if err != nil {
 		return nil, err
 	}
@@ -218,11 +251,39 @@ func FetchMetadataForRun(ctx context.Context, runId string) (*types.Metadata, er
 	return nil, fmt.Errorf("no metadata found for run id %s", runId)
 }
 
-func FetchAllRuns(ctx context.Context, repo string) ([]*types.Summary, error) {
+func getTagsQueryClause(tags map[string]string) ([]string, []interface{}, error) {
+	clause := []string{}
+	params := []interface{}{}
+
+	for k, v := range tags {
+		//TODO(rajatjindal): maybe check if this is a key in our db already?
+		if strings.ContainsAny(k, " \t\n\r\"'`") {
+			return nil, nil, fmt.Errorf("Invalid tag key")
+		}
+
+		clause = append(clause, fmt.Sprintf("json_extract(metadata.tags, '$.%s') = ?", k))
+		params = append(params, v)
+	}
+
+	return clause, params, nil
+}
+
+func FetchAllRuns(ctx context.Context, filter types.CommonFilter) ([]*types.Summary, error) {
 	conn := db()
 	defer conn.Close()
 
-	rows, err := conn.Queryx("select summary.* from summary, metadata where metadata.repo = ? AND metadata.run_id = summary.run_id;", repo)
+	query := "select summary.* from summary, metadata where metadata.run_id = summary.run_id"
+	clause, params, err := getClauseAndParamsFromCommonFilter(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(clause) > 0 {
+		query += " AND "
+		query += strings.Join(clause, " AND ")
+	}
+
+	rows, err := conn.Queryx(query, params...)
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +308,7 @@ type Tag struct {
 	CommaSepValues string   `json:"-" db:"comma_sep_values"` // used for scanning from db
 }
 
-func GetTagsForQuery(ctx context.Context) ([]Tag, error) {
+func GetTagsForQuery(ctx context.Context, filter types.CommonFilter) ([]Tag, error) {
 	conn := db()
 	defer conn.Close()
 
@@ -258,6 +319,8 @@ func GetTagsForQuery(ctx context.Context) ([]Tag, error) {
     FROM
         metadata,
         json_each(tags)
+		WHERE
+			repo = ?
 )
 SELECT
     key,
@@ -267,7 +330,7 @@ FROM
 GROUP BY
     key;
 `
-	rows, err := conn.QueryxContext(ctx, query)
+	rows, err := conn.QueryxContext(ctx, query, filter.Repo)
 	if err != nil {
 		return nil, err
 	}
@@ -340,12 +403,14 @@ func FetchTimeTrendsForSuite(ctx context.Context, filter *types.SuiteTrendsFilte
 	conn := db()
 	defer conn.Close()
 
-	clause, params := getClauseAndParamsFromFilter(filter)
-	index := len(params) + 1
+	clause, params, err := getClauseAndParamsFromFilter(filter)
+	if err != nil {
+		return nil, err
+	}
 
-	query := "select suite_summary.run_id as run_id, metadata.commit_sha as commit_sha, metadata.job_name, suite_summary.suite_name as suite_name, suite_summary.duration as duration from suite_summary, metadata"
+	query := "select suite_summary.run_id as run_id, metadata.commit_sha as commit_sha, metadata.job_name, suite_summary.suite_name as suite_name, suite_summary.duration as duration from suite_summary, metadata WHERE suite_summary.run_id = metadata.run_id"
 	if len(clause) > 0 {
-		query += " WHERE "
+		query += " AND "
 		query += strings.Join(clause, " AND ")
 	}
 
@@ -360,7 +425,6 @@ func FetchTimeTrendsForSuite(ctx context.Context, filter *types.SuiteTrendsFilte
 	if filter.Page > 0 {
 		query += " offset ?"
 		params = append(params, filter.Page*perPage)
-		index++
 	}
 
 	if perPage > 0 {
@@ -368,7 +432,6 @@ func FetchTimeTrendsForSuite(ctx context.Context, filter *types.SuiteTrendsFilte
 		params = append(params, perPage)
 	}
 
-	fmt.Println("query is ", query)
 	rows, err := conn.QueryxContext(ctx, query, params...)
 	if err != nil {
 		return nil, err
@@ -432,11 +495,12 @@ func FetchTimeTrendsForSuite(ctx context.Context, filter *types.SuiteTrendsFilte
 	return sumdata, nil
 }
 
-func getClauseAndParamsFromFilter(filter *types.SuiteTrendsFilter) ([]string, []interface{}) {
-	clause := []string{}
-	params := []interface{}{}
+func getClauseAndParamsFromFilter(filter *types.SuiteTrendsFilter) ([]string, []interface{}, error) {
+	clause, params, err := getClauseAndParamsFromCommonFilter(filter.CommonFilter)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	clause = append(clause, "suite_summary.run_id = metadata.run_id")
 	if filter.SuiteName != "" {
 		parts := strings.Split(filter.SuiteName, " : ")
 		if len(parts) > 1 {
@@ -451,5 +515,21 @@ func getClauseAndParamsFromFilter(filter *types.SuiteTrendsFilter) ([]string, []
 		}
 	}
 
-	return clause, params
+	return clause, params, nil
+}
+
+func getClauseAndParamsFromCommonFilter(filter types.CommonFilter) ([]string, []interface{}, error) {
+	if filter.Repo == "" {
+		return nil, nil, fmt.Errorf("repo is mandatory")
+	}
+
+	clause, params, err := getTagsQueryClause(filter.Tags)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	clause = append(clause, "metadata.repo = ?")
+	params = append(params, filter.Repo)
+
+	return clause, params, nil
 }

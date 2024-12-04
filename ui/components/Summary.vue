@@ -32,10 +32,11 @@
 			<div class="col-span-2 text-left">{{ formatDate(summary.createdAt) }}</div>
 			<div class="col-span-4 flex justify-between">
 
-				<div class="flex justify-start">
+				<!--TODO(rajatjindal): FIXME -->
+				<!-- <div class="flex justify-start">
 					<span v-for="tag in getTags(metadata.tags)"
 								class="px-2 py-1 rounded bg-darkmode-blue-contrast3 text-darkgreen ml-1 wrap">{{ tag }}</span>
-				</div>
+				</div> -->
 
 				<div class="flex justify-items-end">
 					<CancelButton v-if="showHideButton" text="Hide" v-on:click="hideDetails"/>

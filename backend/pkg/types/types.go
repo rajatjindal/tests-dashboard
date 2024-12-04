@@ -83,11 +83,15 @@ type Suite struct {
 	TestsTree []*Test          `json:"-" db:"-"`
 }
 
+type CommonFilter struct {
+	Repo    string            `json:"repo"`
+	Tags    map[string]string `json:"tags"`
+	Page    int               `json:"page"`
+	PerPage int               `json:"perPage"`
+}
 type SuiteTrendsFilter struct {
-	SuiteName string   `json:"suiteName"`
-	Tags      []string `json:"tags"`
-	Page      int      `json:"page"`
-	PerPage   int      `json:"perPage"`
+	SuiteName string `json:"suiteName"`
+	CommonFilter
 }
 
 type SuiteTimeTrendEntry struct {

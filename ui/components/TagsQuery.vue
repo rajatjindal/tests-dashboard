@@ -9,25 +9,24 @@
 										label="Tag Key" />
 
 			<StaticSelect class="ml-2 w-1/2"
-									v-bind:modelValue="currentValue"
+										v-bind:modelValue="currentValue"
 										key="value"
 										:editable="currentKey !== ''"
 										v-on:change="updateValue"
 										:options="tagValues"
 										label="Tag Value" />
 		</div>
-
-		<div class="flex">
-		<div v-for="(value, index) in selectedTags" :key="index" class="text-white border py-1 mt-5 rounded flex ml-2">
-			<span class="px-2">{{ value[0] }}: {{ value[1] }}</span>
-			<span class="" v-on:click="removeIndex(value[0])"><CloseIcon class="w-4 h-4"/></span>
-		</div>
-	</div>
 	</div>
 </template>
 <script setup lang="ts">
 import { getTags } from "@/sdk/backend/api";
 import type { Tag } from '~/sdk/backend/types'
+
+const emit = defineEmits(['updtags'])
+
+const props = defineProps({
+	repo: { type: String, required: false, default: "dagger/ci-tests" }
+})
 
 const currentValue = ref("")
 const currentKey = ref("")
@@ -35,7 +34,11 @@ const selectedTags = ref(new Map<string, string>());
 
 const tags = ref([] as Tag[])
 onBeforeMount(async () => {
-	tags.value = await getTags()
+	if (!props.repo) {
+		return
+	}
+	
+	tags.value = await getTags(props.repo)
 })
 
 const tagKeys = computed(() => tags.value.reduce((accumulator: string[], current: Tag) => {
@@ -62,10 +65,8 @@ const updateKey = function (event: Event) {
 
 const updateValue = function (event: Event) {
 	selectedTags.value.set(currentKey.value, (event.target as HTMLInputElement).value)
+	emit('updtags', selectedTags.value)
 	currentKey.value = ""
-}
-
-const removeIndex = function(key: string) {
-	selectedTags.value.delete(key)
+	console.log("selectedTags inside TagsQuery", selectedTags.value)
 }
 </script>
