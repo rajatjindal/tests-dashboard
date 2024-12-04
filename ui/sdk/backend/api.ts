@@ -1,6 +1,6 @@
-import { Metadata, Summary, SuiteSummary, Test, TimeTrendsData} from './types'
+import { Metadata, Summary, SuiteSummary, Test, TimeTrendsData, Tag } from './types'
 import { myfetch } from '@/sdk/base/myfetch';
-
+import type { SelectFormatter } from "@rajatjindal1983/crud-sdk/base/formatter"
 export const getAllRuns = async (repo: string): Promise<Summary[]> => {
 	const path = `/api/runs?repo=${repo}`
 	return await myfetch(path, {
@@ -62,4 +62,46 @@ export const getTimeTrendsForSuites = async (suiteName: string): Promise<TimeTre
 	return await myfetch(path, {
 		method: 'GET'
 	});
+}
+
+export const getTags = async (): Promise<Tag[]> => {
+	return await myfetch(`/api/tags`, {
+		method: 'GET'
+	});
+}
+
+export class TagsFormatter implements SelectFormatter<Tag> {
+	hello(): string {
+		return "hello from tags formatter"
+	}
+
+	resetPin(): void {
+		//localStorage.removeItem('pinned-tag')
+	}
+	
+	setPin(item: Tag): void {
+		//localStorage.setItem('pinned-tag', JSON.stringify(item))
+	}
+
+	getPin(): Tag {
+		// const raw = localStorage.getItem('pinned-company')
+		// if (!raw) {
+		// 	return null!
+		// }
+
+		// return JSON.parse(raw)
+
+		return JSON.parse({})
+	}
+
+	slug(): string {
+		return "tag"
+	}
+
+	toSelectOption(item: Company): SelectOption {
+		return {
+			key: item ? item.key : "",
+			title: item ? item.key : ""
+		}
+	}
 }

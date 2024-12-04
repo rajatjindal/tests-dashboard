@@ -1,9 +1,6 @@
 package types
 
 import (
-	"database/sql/driver"
-	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 )
@@ -42,36 +39,16 @@ type Summary struct {
 	CreatedAt string  `json:"createdAt" db:"created_at"`
 }
 
-type Map map[string]string
-
-func (m Map) Value() (driver.Value, error) {
-	val, err := json.Marshal(m)
-	return string(val), err
-}
-
-func (m Map) Scan(v interface{}) error {
-	if v == nil {
-		return nil
-	}
-	switch data := v.(type) {
-	case string:
-		return json.Unmarshal([]byte(data), &m)
-	case []byte:
-		return json.Unmarshal(data, &m)
-	default:
-		return fmt.Errorf("cannot scan type %t into Map", v)
-	}
-}
-
 type Metadata struct {
-	RunId     string `json:"runId" db:"run_id"`
-	CommitSha string `json:"commitSha" db:"commit_sha"`
-	Repo      string `json:"repo" db:"repo"`
-	Branch    string `json:"branch" db:"branch"`
-	Format    string `json:"format" db:"format"`
-	Link      string `json:"link" db:"link"`
-	Tags      Map    `json:"tags" db:"tags"`
-	CreatedAt string `json:"createdAt" db:"created_at"`
+	RunId     string            `json:"runId" db:"run_id"`
+	CommitSha string            `json:"commitSha" db:"commit_sha"`
+	JobName   string            `json:"jobName" db:"job_name"`
+	Repo      string            `json:"repo" db:"repo"`
+	Branch    string            `json:"branch" db:"branch"`
+	Format    string            `json:"format" db:"format"`
+	Link      string            `json:"link" db:"link"`
+	Tags      map[string]string `json:"tags" db:"tags"`
+	CreatedAt string            `json:"createdAt" db:"created_at"`
 }
 
 type Event struct {

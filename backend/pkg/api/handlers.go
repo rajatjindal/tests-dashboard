@@ -66,6 +66,16 @@ func updateMetadata(w http.ResponseWriter, r *http.Request, params spinhttp.Para
 	}
 }
 
+func getTags(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	tags, err := storage.GetTagsForQuery(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	prettyPrint(w, tags)
+}
+
 func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
 	runId := params.ByName("runId")
 	fmt.Printf("run id %s\n", runId)

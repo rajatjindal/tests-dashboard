@@ -1,7 +1,11 @@
 <template>
 	<div class="mx-auto w-11/12">
+		<div class="mt-5">
+			<TagsQuery />
+		</div>
+		
 		<div
-				 class="w-full md:w-full gap-4 border border-darkplum px-4 py-4 mx-auto rounded bg-indigo-50 shadow-2xl mt-20">
+				 class="w-full md:w-full gap-4 border border-darkplum px-4 py-4 mx-auto rounded bg-indigo-50 shadow-2xl mt-10">
 			<BarChart v-if="timetrends && timetrends.datasets && timetrends.datasets.length > 0" class="w-full h-screen"
 								key="timetrends"
                 v-on:dataset-clicked="showRunWithIndex"

@@ -11,12 +11,13 @@ func New() *spinhttp.Router {
 	router := spinhttp.NewRouter()
 	cors(router)
 
-	router.GET("/api/livenessz", func(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	router.GET("/api/healthz", func(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
 		w.WriteHeader(http.StatusOK)
 	})
 
 	router.POST("/api/schema", createSchema)
 
+	router.GET("/api/tags", getTags)
 	router.POST("/api/run/:runId", ingestTestRun)
 
 	router.GET("/api/runs", fetchAllRuns)

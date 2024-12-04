@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/rand/v2"
 	"strings"
@@ -290,12 +291,12 @@ func IngestTestRun(ctx context.Context, metadata *types.Metadata, summary *types
 	conn := db()
 	defer conn.Close()
 
-	tags, err := metadata.Tags.Value()
+	tags, err := json.Marshal(metadata.Tags)
 	if err != nil {
 		return err
 	}
 
-	_, err = conn.QueryxContext(ctx, "INSERT INTO metadata (run_id, commit_sha, repo, branch, format, link, tags, created_at) values (?, ?, ?, ?, ?, ?, ?, ?)", metadata.RunId, metadata.CommitSha, metadata.Repo, metadata.Branch, metadata.Format, metadata.Link, tags, metadata.CreatedAt)
+	_, err = conn.QueryxContext(ctx, "INSERT INTO metadata (run_id, repo, branch, commit_sha, job_name, format, link, tags, created_at) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", metadata.RunId, metadata.Repo, metadata.Branch, metadata.CommitSha, metadata.JobName, metadata.Format, metadata.Link, tags, metadata.CreatedAt)
 	if err != nil {
 		return err
 	}
