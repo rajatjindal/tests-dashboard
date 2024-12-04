@@ -1,21 +1,7 @@
 <template>
 	<div class="mx-auto w-11/12">
-		<div
-				 class="w-full md:w-1/2 grid grid-cols-3 gap-4 border border-darkplum px-4 py-4 mx-auto rounded bg-indigo-50 shadow-2xl mt-20">
-			<div class="col-span-1 text-xs my-auto">
-				<input type="checkbox"
-							 class="rounded mt-2"
-							 v-model="showIgnored" />
-				<span class="ml-1 text-darkmode-blue-contrast1">Show Ignored</span>
-			</div>
-
-			<InputNumber v-model="maxRuns"
-									 label="Number of runs"
-									 class="col-span-1" />
-
-			<InputText v-model="service"
-									 label="service to fetch results for"
-									 class="col-span-1" />
+		<div class="mt-5 text-darkmode-blue-contrast1 border px-6 py-6 mx-auto rounded">
+			<CommonQuery v-on:updrepo="updateRepo" v-on:updtags="updateTags" :repo="repo" :tags="tags" />
 		</div>
 
 		<BarChart class="w-full h-40 mt-10"
@@ -40,26 +26,33 @@ import { formatDate } from "@/sdk/base/myfetch";
 import { ChartData } from "chart.js";
 import { getAllRuns } from "@/sdk/backend/api";
 import type { Summary } from '~/sdk/backend/types'
+import type {  TimeTrendsData } from '~/sdk/backend/types'
 
-const defaultService = "dagger/ci-tests"
+const defaultRepo = ""
+const qrepo = useRoute().query["repo"]
+const repo = ref(qrepo ? qrepo.toString() : defaultRepo)
+
+const branch = useRoute().query["branch"]?.toString() ?? ""
+const commitSha = useRoute().query["commitSha"]?.toString() ?? ""
+
+const tags = ref(new Map<string, string>())
+const suiteName = useRoute().query["suiteName"]?.toString() ?? ""
+const timetrends = ref({} as TimeTrendsData)
 
 const maxRuns = ref(20)
 const showIgnored = ref(false)
 const runs = ref([] as Summary[])
 const currentRun = ref({} as Summary)
-const qservice = useRoute().query["service"]
-const service = ref(qservice ? qservice.toString() : defaultService)
 
 const lastXruns = computed(() => runs.value ? runs.value.slice(-1 * maxRuns.value) : [])
 const lineChartData = computed(() => lastXruns.value ? toLineChart(lastXruns.value) : undefined)
 
-watch(() => service, async (currentValue, oldValue) => {
-	runs.value = await getAllRuns(currentValue.value)
+watch(() => repo, async (currentValue, oldValue) => {
+	runs.value = await getAllRuns(currentValue.value, branch, commitSha, tags.value)
 })
 
 onBeforeMount(async () => {
-	const s = service.value ? service.value : defaultService
-	runs.value = await getAllRuns(s)
+	runs.value = await getAllRuns(repo.value, branch, commitSha, tags.value)
 })
 
 const showRunWithIndex = function (index: number) {
@@ -118,4 +111,23 @@ const toLineChart = function (runs: Summary[]): ChartData<"bar", (number | [numb
 		],
 	}
 }
+
+const updateRepo = function(val: string) {
+	repo.value = val
+}
+
+const updateTags = function(val: Map<string, string>) {
+	console.log("final upd tags", val)
+	tags.value = val
+}
+
+watch(repo, async (currentValue, oldValue) => {
+	console.log("repo watch")
+	runs.value = await getAllRuns(currentValue, branch, commitSha, tags.value)
+}, { deep: true })
+
+watch(tags, async (currentValue, oldValue) => {
+	console.log("tags watch")
+	runs.value = await getAllRuns(repo.value,branch, commitSha, currentValue)
+}, { deep: true })
 </script>

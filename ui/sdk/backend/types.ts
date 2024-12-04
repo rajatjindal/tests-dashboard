@@ -50,7 +50,7 @@ export interface Metadata {
 	branch: string;
 	format: string;
 	link: string;
-	tags: string;
+	tags: Object; //TODO: change it to key=value specific type
 	createdAt: string;
 }
 
@@ -62,6 +62,12 @@ export interface Dataset {
 }
 
 export interface TimeTrendsData {
-	labels: string[];
+	labels: string[][];
+	ids: string[];
 	datasets: Dataset[];
+}
+
+export interface Tag {
+	key: string;
+	values: string[]
 }

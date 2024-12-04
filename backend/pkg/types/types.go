@@ -40,15 +40,16 @@ type Summary struct {
 }
 
 type Metadata struct {
-	RunId     string `json:"runId" db:"run_id"`
-	CommitSha string `json:"commitSha" db:"commit_sha"`
-	JobName   string `json:"jobName" db:"job_name"`
-	Repo      string `json:"repo" db:"repo"`
-	Branch    string `json:"branch" db:"branch"`
-	Format    string `json:"format" db:"format"`
-	Link      string `json:"link" db:"link"`
-	Tags      string `json:"tags" db:"tags"`
-	CreatedAt string `json:"createdAt" db:"created_at"`
+	RunId     string            `json:"runId" db:"run_id"`
+	CommitSha string            `json:"commitSha" db:"commit_sha"`
+	JobName   string            `json:"jobName" db:"job_name"`
+	Repo      string            `json:"repo" db:"repo"`
+	Branch    string            `json:"branch" db:"branch"`
+	Format    string            `json:"format" db:"format"`
+	Link      string            `json:"link" db:"link"`
+	RawTags   string            `json:"-" db:"tags"`
+	Tags      map[string]string `json:"tags" db:"-"`
+	CreatedAt string            `json:"createdAt" db:"created_at"`
 }
 
 type Event struct {
@@ -83,11 +84,17 @@ type Suite struct {
 	TestsTree []*Test          `json:"-" db:"-"`
 }
 
+type CommonFilter struct {
+	Repo      string            `json:"repo"`
+	Branch    string            `json:"branch"`
+	CommitSha string            `json:"commitSha"`
+	Tags      map[string]string `json:"tags"`
+	Page      int               `json:"page"`
+	PerPage   int               `json:"perPage"`
+}
 type SuiteTrendsFilter struct {
-	SuiteName string   `json:"suiteName"`
-	Tags      []string `json:"tags"`
-	Page      int      `json:"page"`
-	PerPage   int      `json:"perPage"`
+	SuiteName string `json:"suiteName"`
+	CommonFilter
 }
 
 type SuiteTimeTrendEntry struct {
@@ -103,8 +110,10 @@ type Dataset struct {
 	Data            []float64 `json:"data"`
 	Stack           string    `json:"stack"`
 	BackgroundColor string    `json:"backgroundColor"`
+	Hidden          bool      `json:"hidden"`
 }
 type TimeTrendsData struct {
-	Labels   []string  `json:"labels"`
-	Datasets []Dataset `json:"datasets"`
+	Labels   [][]string `json:"labels"`
+	Ids      []string   `json:"ids"`
+	Datasets []Dataset  `json:"datasets"`
 }

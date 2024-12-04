@@ -11,13 +11,16 @@ func New() *spinhttp.Router {
 	router := spinhttp.NewRouter()
 	cors(router)
 
-	router.GET("/api/livenessz", func(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	router.GET("/api/healthz", func(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
 		w.WriteHeader(http.StatusOK)
 	})
 
 	router.POST("/api/schema", createSchema)
 
+	router.GET("/api/tags", getTags)
 	router.POST("/api/run/:runId", ingestTestRun)
+
+	router.GET("/api/trends/reliability", fetchReliabilityTrends)
 
 	router.GET("/api/runs", fetchAllRuns)
 	router.GET("/api/runs/:runId/metadata", fetchMetadataForRun)
@@ -25,6 +28,10 @@ func New() *spinhttp.Router {
 	router.GET("/api/runs/:runId/suites", fetchSuitesForRun)
 	router.GET("/api/runs/:runId/suites-summary", fetchSuiteSummaryForRunId)
 	router.GET("/api/runs/:runId/suites/:suiteId/tests", fetchTestsForRunIdAndSuite)
+
+	// reports
+	router.GET("/api/reports/top-n-slowest-tests", fetchTopNSlowestTestSuites)
+	router.GET("/api/reports/top-n-flaky-tests", fetchTopNFlakyTestSuites)
 
 	// time trends
 	router.GET("/api/trends/suites/time", fetchTimeTrendsForSuite)
