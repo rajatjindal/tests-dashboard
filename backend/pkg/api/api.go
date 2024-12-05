@@ -20,6 +20,8 @@ func New() *spinhttp.Router {
 	router.GET("/api/tags", getTags)
 	router.POST("/api/run/:runId", ingestTestRun)
 
+	router.GET("/api/trends/reliability", fetchReliabilityTrends)
+
 	router.GET("/api/runs", fetchAllRuns)
 	router.GET("/api/runs/:runId/metadata", fetchMetadataForRun)
 	router.GET("/api/runs/:runId/summary", fetchSummaryForRun)

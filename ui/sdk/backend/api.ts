@@ -1,7 +1,7 @@
 import { Metadata, Summary, SuiteSummary, Test, TimeTrendsData, Tag } from './types'
 import { myfetch } from '@/sdk/base/myfetch';
-export const getAllRuns = async (repo: string): Promise<Summary[]> => {
-	const path = `/api/runs?repo=${repo}`
+export const getAllRuns = async (repo: string, tags: Map<string, string>): Promise<Summary[]> => {
+	const path = `/api/runs?repo=${repo}&${tagsToQueryString(tags)}`
 	return await myfetch(path, {
 		method: 'GET'
 	});
@@ -58,6 +58,13 @@ export const getTestsForTestcase = async (repo: string, testname: string, tags: 
 
 export const getTimeTrendsForSuites = async (repo: string, suiteName: string, tags: Map<string, string>): Promise<TimeTrendsData> => {
 	const path = `/api/trends/suites/time?suiteName=${suiteName}&repo=${repo}&${tagsToQueryString(tags)}`
+	return await myfetch(path, {
+		method: 'GET'
+	});
+}
+
+export const getReliabilityTrendsForSuites = async (repo: string, suiteName: string, tags: Map<string, string>): Promise<TimeTrendsData> => {
+	const path = `/api/trends/reliability?repo=${repo}&${tagsToQueryString(tags)}`
 	return await myfetch(path, {
 		method: 'GET'
 	});

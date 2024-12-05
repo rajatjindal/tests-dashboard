@@ -452,7 +452,6 @@ func FetchTimeTrendsForSuite(ctx context.Context, filter *types.SuiteTrendsFilte
 
 	// TODO(rajatjindal): in the latest execution find the slowest 10 executions
 	// then for all other runs prepare the execution times for those 10 suites only
-
 	datamap := map[string]map[string]map[string]*types.SuiteTimeTrendEntry{}
 	for _, item := range items {
 		_, ok := datamap[item.CommitSha]
@@ -533,5 +532,108 @@ func getClauseAndParamsFromCommonFilter(filter types.CommonFilter) ([]string, []
 	clause = append(clause, "metadata.repo = ?")
 	params = append(params, filter.Repo)
 
+	if filter.Branch != "" {
+		clause = append(clause, "metadata.branch = ?")
+		params = append(params, filter.Branch)
+	}
+
+	if filter.CommitSha != "" {
+		clause = append(clause, "metadata.commit_sha = ?")
+		params = append(params, filter.CommitSha)
+	}
+
 	return clause, params, nil
+}
+
+func FetchReliabilityTrends(ctx context.Context, filter types.CommonFilter) (*types.TimeTrendsData, error) {
+	conn := db()
+	defer conn.Close()
+
+	clause, params, err := getClauseAndParamsFromCommonFilter(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("clause: %v, params: %v\n", clause, params)
+	query := `
+SELECT 
+	metadata.commit_sha as commit_sha,
+	sum(summary.passed) as passed, 
+	sum(summary.failed) as failed, 
+	sum(summary.ignored) as ignored 
+FROM
+ summary, 
+ metadata 
+WHERE
+  metadata.run_id = summary.run_id`
+
+	if len(clause) > 0 {
+		query += " AND "
+		query += strings.Join(clause, " AND ")
+	}
+
+	query += ` GROUP BY metadata.commit_sha`
+
+	rows, err := conn.QueryxContext(ctx, query, params...)
+	if err != nil {
+		return nil, err
+	}
+
+	type TempData struct {
+		CommitSha string `db:"commit_sha"`
+		Passed    int    `db:"passed"`
+		Failed    int    `db:"failed"`
+		Ignored   int    `db:"ignored"`
+	}
+
+	sumdata := &types.TimeTrendsData{
+		Datasets: []types.Dataset{
+			{
+				Label:           "passed",
+				Data:            []float64{},
+				BackgroundColor: "green",
+			},
+			{
+				Label:           "failed",
+				Data:            []float64{},
+				BackgroundColor: "red",
+			},
+			{
+				Label:           "ignored",
+				Data:            []float64{},
+				BackgroundColor: "gray",
+			},
+		},
+	}
+
+	items := []*TempData{}
+	for rows.Next() {
+		var item TempData
+		err = rows.StructScan(&item)
+		if err != nil {
+			return nil, err
+		}
+
+		sumdata.Labels = append(sumdata.Labels, item.CommitSha)
+		sumdata.Datasets[0].Data = append(sumdata.Datasets[0].Data, float64(item.Passed))
+		sumdata.Datasets[1].Data = append(sumdata.Datasets[1].Data, float64(item.Failed))
+		sumdata.Datasets[2].Data = append(sumdata.Datasets[2].Data, float64(item.Ignored))
+		items = append(items, &item)
+	}
+
+	/*
+		labels = [a, b]
+		datasets = [
+			{
+				label: passed,
+				data: [a, b]
+				stack: "",
+				color: ""
+			}
+		]
+
+
+	*/
+
+	return sumdata, nil
 }

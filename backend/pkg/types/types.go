@@ -84,10 +84,12 @@ type Suite struct {
 }
 
 type CommonFilter struct {
-	Repo    string            `json:"repo"`
-	Tags    map[string]string `json:"tags"`
-	Page    int               `json:"page"`
-	PerPage int               `json:"perPage"`
+	Repo      string            `json:"repo"`
+	Branch    string            `json:"branch"`
+	CommitSha string            `json:"commitSha"`
+	Tags      map[string]string `json:"tags"`
+	Page      int               `json:"page"`
+	PerPage   int               `json:"perPage"`
 }
 type SuiteTrendsFilter struct {
 	SuiteName string `json:"suiteName"`

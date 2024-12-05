@@ -28,9 +28,16 @@ const chartOptions = ref({
 			const dataset = fp.datasetIndex
 			const datapoint = fp.index
 		
-			// console.log(`${dataset} ${datapoint}`)
-			// console.log(props.chartData.datasets[dataset].label)
-			emit('dataset-clicked', datapoint, props.chartData.datasets[dataset].label)
+			console.log(`${dataset} ${datapoint}`)
+			console.log("" + props.chartData.labels![datapoint])
+			const obj = {
+				index: datapoint,
+				label: props.chartData.labels![datapoint],
+				datasetLabel: props.chartData.datasets[dataset].label
+			}
+
+			console.log(JSON.stringify(obj))
+			emit('dataset-clicked', obj)
 		}
 	}
 })

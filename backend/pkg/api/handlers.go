@@ -17,9 +17,12 @@ import (
 )
 
 func getCommonFilterFromRequest(r *http.Request) types.CommonFilter {
+	fmt.Println("query -> ", r.URL.Query())
 	return types.CommonFilter{
-		Repo: r.URL.Query().Get("repo"),
-		Tags: getTagsFromQuery(r),
+		Repo:      r.URL.Query().Get("repo"),
+		Branch:    r.URL.Query().Get("branch"),
+		CommitSha: r.URL.Query().Get("commitSha"),
+		Tags:      getTagsFromQuery(r),
 	}
 }
 
@@ -32,6 +35,24 @@ func getTagsFromQuery(r *http.Request) map[string]string {
 	}
 
 	return tags
+}
+
+func fetchReliabilityTrends(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	repo := r.URL.Query().Get("repo")
+	if repo == "" {
+		http.Error(w, "repo is required", http.StatusBadRequest)
+		return
+	}
+
+	filter := getCommonFilterFromRequest(r)
+	fmt.Printf("reliability: %#v", filter)
+	summary, err := storage.FetchReliabilityTrends(r.Context(), filter)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	prettyPrint(w, summary)
 }
 
 func fetchAllRuns(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {

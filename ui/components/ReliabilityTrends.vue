@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import {  getTimeTrendsForSuites } from "@/sdk/backend/api";
+import {  getReliabilityTrendsForSuites, getTimeTrendsForSuites } from "@/sdk/backend/api";
 import type {  TimeTrendsData } from '~/sdk/backend/types'
 
 const defaultRepo = ""
@@ -26,7 +26,7 @@ const suiteName = useRoute().query["suiteName"]?.toString() ?? ""
 const timetrends = ref({} as TimeTrendsData)
 
 onBeforeMount(async () => {
-	timetrends.value = await getTimeTrendsForSuites(repo.value, suiteName, tags.value)
+	timetrends.value = await getReliabilityTrendsForSuites(repo.value, suiteName, tags.value)
 })
 
 const clone = function <T>(item: T): T {
@@ -35,17 +35,17 @@ const clone = function <T>(item: T): T {
 
 watch(repo, async (currentValue, oldValue) => {
 	console.log("repo watch")
-	timetrends.value = await getTimeTrendsForSuites(currentValue, suiteName, tags.value)
+	timetrends.value = await getReliabilityTrendsForSuites(currentValue, suiteName, tags.value)
 }, { deep: true })
 
 watch(tags, async (currentValue, oldValue) => {
 	console.log("tags watch")
-	timetrends.value = await getTimeTrendsForSuites(repo.value, suiteName, currentValue)
+	timetrends.value = await getReliabilityTrendsForSuites(repo.value, suiteName, currentValue)
 }, { deep: true })
 
 const showRunWithIndex = async function (obj: {index: string, label: string, datasetLabel: string}) {
   // console.log("clicked at ", index, " valat:", label)
-  await navigateTo(`/timetrends?suiteName=${obj.datasetLabel}`, {
+  await navigateTo(`/reliabilitytrends?repo=${repo.value}&commitSha=${obj.label}`, {
     open: {
       target: '_blank',
     }
