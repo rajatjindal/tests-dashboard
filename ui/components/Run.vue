@@ -1,9 +1,11 @@
 <template>
 	<div class="mt-5">
-		<div class="text-darkmode-blue-contrast1 mb-10" v-if="useRoute().query['logLine']">
+		<div class="text-darkmode-blue-contrast1 mb-10"
+				 v-if="useRoute().query['logLine']">
 			Showing history of log line <span class="italic font-bold">{{ useRoute().query["logLine"] }}</span>
 		</div>
-		<div class="text-darkmode-blue-contrast1 mb-10" v-if="useRoute().query['testname']">
+		<div class="text-darkmode-blue-contrast1 mb-10"
+				 v-if="useRoute().query['testname']">
 			Showing history of testcase <span class="italic font-bold">{{ useRoute().query["testname"] }}</span>
 		</div>
 		<div class="col-span-1 text-xs my-auto">
@@ -12,7 +14,8 @@
 						 v-model="showFailedOnly" /><span class="ml-1 text-darkmode-blue-contrast1">Show Failed only</span>
 		</div>
 	</div>
-	<div class="text-darkmode-blue-contrast1 hidden md:grid grid-cols-5 gap-4 border border-darkplum px-3 py-3 text-xs uppercase tracking-wider border-b-0 text-darmplum">
+	<div
+			 class="text-darkmode-blue-contrast1 hidden md:grid grid-cols-5 gap-4 border border-darkplum px-3 py-3 text-xs uppercase tracking-wider border-b-0 text-darmplum">
 		<div class="col-span-2">Name</div>
 		<div class="col-span-1">Result</div>
 		<div class="col-span-1">Duration</div>
@@ -41,7 +44,9 @@
 				<div class="ml-1 mr-1 text-darkplum">{{ test.result }}</div>
 			</div>
 			<div class="col-span-1">{{ humanDuration(test.duration) }}</div>
-			<div class="col-span-1 underline"><NuxtLink :to="'/run/' + test.runId">details</NuxtLink></div>
+			<div class="col-span-1 underline">
+				<NuxtLink :to="'/run/' + test.runId">details</NuxtLink>
+			</div>
 			<div class="col-span-4">
 				<p v-for="line in test.logs.split('\n')"
 					 class="text-darkplum italic">
@@ -59,10 +64,12 @@ import { getTestsForRunAndSuite, getTestsForLogLine } from "@/sdk/backend/api";
 import { Test } from "@/sdk/backend/types";
 
 const props = defineProps({
-	runId: { type: String },
+	repo: { type: String, required: false, default: "" },
+	runId: { type: String, required: false, default: "" },
+	tags: { type: Object as PropType<Map<string, string>>, required: false, default: new Map<string, string>() },
 	showIgnored: { type: Boolean, default: true },
-	forlogs: { type: Boolean, default: false},
-	fortestname: { type: Boolean, default: false}
+	forlogs: { type: Boolean, default: false },
+	fortestname: { type: Boolean, default: false }
 })
 
 const showFailedOnly = ref(false)
@@ -72,18 +79,18 @@ onBeforeMount(async () => {
 	if (props.forlogs) {
 		const logLine = useRoute().query["logLine"];
 		if (logLine) {
-			tests.value = await getTestsForLogLine(logLine.toString())
+			tests.value = await getTestsForLogLine(props.repo, logLine.toString(), props.tags)
 		}
-		
+
 		return
 	}
 
 	if (props.fortestname) {
 		const testname = useRoute().query["testname"];
 		if (testname) {
-			tests.value = await getTestsForLogLine(testname.toString())
+			tests.value = await getTestsForLogLine(props.repo, testname.toString(), props.tags)
 		}
-		
+
 		return
 	}
 
@@ -106,15 +113,15 @@ const filteredTests = computed(() => tests.value ? tests.value.filter(item => {
 
 const lastIndex = computed(() => filteredTests.value ? filteredTests.value.length - 1 : 0)
 
-const highlight = function(line: string): string {
+const highlight = function (line: string): string {
 	const logline = useRoute().query["logLine"];
 	if (!logline) {
 		return line
 	}
 
-  var check = new RegExp(logline.toString(), "ig");
-  return line.toString().replace(check, function(matchedText,a,b){
-      return ('<span class="bg-seagreen font-bold px-1 py-0.5 rounded">' + matchedText + '</span>');
-  });
+	var check = new RegExp(logline.toString(), "ig");
+	return line.toString().replace(check, function (matchedText, a, b) {
+		return ('<span class="bg-seagreen font-bold px-1 py-0.5 rounded">' + matchedText + '</span>');
+	});
 }
 </script>
