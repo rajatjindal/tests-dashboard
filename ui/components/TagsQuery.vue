@@ -56,7 +56,7 @@ onBeforeMount(async () => {
 		return
 	}
 	
-	tags.value = await getTags(props.repo)
+	tags.value = await getTags(props.repo, "", "")
 })
 
 const tagKeys = computed(() => tags.value ? tags.value.reduce((accumulator: string[], current: Tag) => {

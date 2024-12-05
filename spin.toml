@@ -10,10 +10,10 @@ source = { url = "https://github.com/fermyon/spin-fileserver/releases/download/v
 id = "fileserver_static"
 files = [ { source = "ui/.output/public/", destination = "/" } ]
 [component.trigger]
-route = "/none..."
-#[component.build]
-#command = "cd ui && yarn install --frozen-lockfile && yarn generate && cd -"
-#watch = ["**/*.vue", "**/*.ts"]
+route = "/..."
+[component.build]
+command = "cd ui && yarn install --frozen-lockfile && yarn generate && cd -"
+watch = ["**/*.vue", "**/*.ts"]
 
 [[component]]
 id = "backend"
