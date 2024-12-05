@@ -13,7 +13,7 @@
 									 label="Number of runs"
 									 class="col-span-1" />
 
-			<InputText v-model="service"
+			<InputText v-model="repo"
 									 label="service to fetch results for"
 									 class="col-span-1" />
 		</div>
@@ -41,24 +41,25 @@ import { ChartData } from "chart.js";
 import { getAllRuns } from "@/sdk/backend/api";
 import type { Summary } from '~/sdk/backend/types'
 
-const defaultService = "dagger/ci-tests"
+const defaultRepo = ""
+const qrepo = useRoute().query["repo"]
+const repo = ref(qrepo ? qrepo.toString() : defaultRepo)
 
 const maxRuns = ref(20)
 const showIgnored = ref(false)
 const runs = ref([] as Summary[])
 const currentRun = ref({} as Summary)
-const qservice = useRoute().query["service"]
-const service = ref(qservice ? qservice.toString() : defaultService)
+
 
 const lastXruns = computed(() => runs.value ? runs.value.slice(-1 * maxRuns.value) : [])
 const lineChartData = computed(() => lastXruns.value ? toLineChart(lastXruns.value) : undefined)
 
-watch(() => service, async (currentValue, oldValue) => {
+watch(() => repo, async (currentValue, oldValue) => {
 	runs.value = await getAllRuns(currentValue.value)
 })
 
 onBeforeMount(async () => {
-	const s = service.value ? service.value : defaultService
+	const s = repo.value ? repo.value : defaultRepo
 	runs.value = await getAllRuns(s)
 })
 

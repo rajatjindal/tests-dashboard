@@ -17,7 +17,10 @@
 import {  getTimeTrendsForSuites } from "@/sdk/backend/api";
 import type {  TimeTrendsData } from '~/sdk/backend/types'
 
-const repo = ref("dagger/ci-tests")
+const defaultRepo = ""
+const qrepo = useRoute().query["repo"]
+const repo = ref(qrepo ? qrepo.toString() : defaultRepo)
+
 const tags = ref(new Map<string, string>())
 const suiteName = useRoute().query["suiteName"]?.toString() ?? ""
 

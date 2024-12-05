@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/rand/v2"
 	"strings"
@@ -303,7 +304,7 @@ func FetchAllRuns(ctx context.Context, filter types.CommonFilter) ([]*types.Summ
 }
 
 type Tag struct {
-	Key            string   `json:"key" db:"key"`
+	Key            string   `json:"key" db:"tagkey"`
 	Values         []string `json:"values"`
 	CommaSepValues string   `json:"-" db:"comma_sep_values"` // used for scanning from db
 }
@@ -323,7 +324,7 @@ func GetTagsForQuery(ctx context.Context, filter types.CommonFilter) ([]Tag, err
 			repo = ?
 )
 SELECT
-    key,
+    key AS tagkey,
     GROUP_CONCAT(DISTINCT value) AS comma_sep_values
 FROM
     json_parsed
@@ -340,7 +341,7 @@ GROUP BY
 		var item Tag
 		err = rows.StructScan(&item)
 		if err != nil {
-			return nil, err
+			return nil, errors.New(err.Error() + " scanning tag")
 		}
 
 		item.Values = strings.Split(item.CommaSepValues, ",")
@@ -359,7 +360,8 @@ func IngestTestRun(ctx context.Context, metadata *types.Metadata, summary *types
 		return err
 	}
 
-	_, err = conn.QueryxContext(ctx, "INSERT INTO metadata (run_id, repo, branch, commit_sha, job_name, format, link, tags, created_at) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", metadata.RunId, metadata.Repo, metadata.Branch, metadata.CommitSha, metadata.JobName, metadata.Format, metadata.Link, tags, metadata.CreatedAt)
+	fmt.Println("ENTERING TAGS -> ", string(tags))
+	_, err = conn.QueryxContext(ctx, "INSERT INTO metadata (run_id, repo, branch, commit_sha, job_name, format, link, tags, created_at) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", metadata.RunId, metadata.Repo, metadata.Branch, metadata.CommitSha, metadata.JobName, metadata.Format, metadata.Link, string(tags), metadata.CreatedAt)
 	if err != nil {
 		return err
 	}

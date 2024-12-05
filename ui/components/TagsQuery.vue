@@ -25,7 +25,7 @@ import type { Tag } from '~/sdk/backend/types'
 const emit = defineEmits(['updtags'])
 
 const props = defineProps({
-	repo: { type: String, required: false, default: "dagger/ci-tests" }
+	repo: { type: String, required: false, default: "" }
 })
 
 const currentValue = ref("")
