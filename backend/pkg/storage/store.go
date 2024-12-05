@@ -549,6 +549,11 @@ func FetchReliabilityTrends(ctx context.Context, filter types.CommonFilter) (*ty
 	conn := db()
 	defer conn.Close()
 
+	// fetch data specific for the commit
+	if filter.CommitSha != "" {
+		return fetchReliabilityTrendsForCommit(ctx, filter)
+	}
+
 	clause, params, err := getClauseAndParamsFromCommonFilter(filter)
 	if err != nil {
 		return nil, err
@@ -591,17 +596,17 @@ WHERE
 			{
 				Label:           "passed",
 				Data:            []float64{},
-				BackgroundColor: "green",
+				BackgroundColor: "#34e8bd",
 			},
 			{
 				Label:           "failed",
 				Data:            []float64{},
-				BackgroundColor: "red",
+				BackgroundColor: "#CE5050",
 			},
 			{
 				Label:           "ignored",
 				Data:            []float64{},
-				BackgroundColor: "gray",
+				BackgroundColor: "#9ca3af",
 			},
 		},
 	}
@@ -634,6 +639,91 @@ WHERE
 
 
 	*/
+
+	return sumdata, nil
+}
+
+func fetchReliabilityTrendsForCommit(ctx context.Context, filter types.CommonFilter) (*types.TimeTrendsData, error) {
+	conn := db()
+	defer conn.Close()
+
+	if filter.CommitSha == "" {
+		return nil, fmt.Errorf("commitSha is required")
+	}
+
+	clause, params, err := getClauseAndParamsFromCommonFilter(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("clause: %v, params: %v\n", clause, params)
+	query := `
+SELECT 
+	metadata.run_id as run_id,
+	metadata.tags as tags,
+	sum(summary.passed) as passed, 
+	sum(summary.failed) as failed, 
+	sum(summary.ignored) as ignored 
+FROM
+ summary, 
+ metadata 
+WHERE
+  metadata.run_id = summary.run_id`
+
+	if len(clause) > 0 {
+		query += " AND "
+		query += strings.Join(clause, " AND ")
+	}
+
+	query += ` GROUP BY metadata.run_id`
+
+	rows, err := conn.QueryxContext(ctx, query, params...)
+	if err != nil {
+		return nil, err
+	}
+
+	type TempData struct {
+		RunId   string `db:"run_id"`
+		Tags    string `db:"tags"`
+		Passed  int    `db:"passed"`
+		Failed  int    `db:"failed"`
+		Ignored int    `db:"ignored"`
+	}
+
+	sumdata := &types.TimeTrendsData{
+		Datasets: []types.Dataset{
+			{
+				Label:           "passed",
+				Data:            []float64{},
+				BackgroundColor: "#34e8bd",
+			},
+			{
+				Label:           "failed",
+				Data:            []float64{},
+				BackgroundColor: "#CE5050",
+			},
+			{
+				Label:           "ignored",
+				Data:            []float64{},
+				BackgroundColor: "#9ca3af",
+			},
+		},
+	}
+
+	items := []*TempData{}
+	for rows.Next() {
+		var item TempData
+		err = rows.StructScan(&item)
+		if err != nil {
+			return nil, err
+		}
+
+		sumdata.Labels = append(sumdata.Labels, item.RunId)
+		sumdata.Datasets[0].Data = append(sumdata.Datasets[0].Data, float64(item.Passed))
+		sumdata.Datasets[1].Data = append(sumdata.Datasets[1].Data, float64(item.Failed))
+		sumdata.Datasets[2].Data = append(sumdata.Datasets[2].Data, float64(item.Ignored))
+		items = append(items, &item)
+	}
 
 	return sumdata, nil
 }

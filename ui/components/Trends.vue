@@ -32,6 +32,9 @@ const defaultRepo = ""
 const qrepo = useRoute().query["repo"]
 const repo = ref(qrepo ? qrepo.toString() : defaultRepo)
 
+const branch = useRoute().query["branch"]?.toString() ?? ""
+const commitSha = useRoute().query["commitSha"]?.toString() ?? ""
+
 const tags = ref(new Map<string, string>())
 const suiteName = useRoute().query["suiteName"]?.toString() ?? ""
 const timetrends = ref({} as TimeTrendsData)
@@ -45,11 +48,11 @@ const lastXruns = computed(() => runs.value ? runs.value.slice(-1 * maxRuns.valu
 const lineChartData = computed(() => lastXruns.value ? toLineChart(lastXruns.value) : undefined)
 
 watch(() => repo, async (currentValue, oldValue) => {
-	runs.value = await getAllRuns(currentValue.value, tags.value)
+	runs.value = await getAllRuns(currentValue.value, branch, commitSha, tags.value)
 })
 
 onBeforeMount(async () => {
-	runs.value = await getAllRuns(repo.value, tags.value)
+	runs.value = await getAllRuns(repo.value, branch, commitSha, tags.value)
 })
 
 const showRunWithIndex = function (index: number) {
@@ -120,11 +123,11 @@ const updateTags = function(val: Map<string, string>) {
 
 watch(repo, async (currentValue, oldValue) => {
 	console.log("repo watch")
-	runs.value = await getAllRuns(currentValue, tags.value)
+	runs.value = await getAllRuns(currentValue, branch, commitSha, tags.value)
 }, { deep: true })
 
 watch(tags, async (currentValue, oldValue) => {
 	console.log("tags watch")
-	runs.value = await getAllRuns(repo.value, currentValue)
+	runs.value = await getAllRuns(repo.value,branch, commitSha, currentValue)
 }, { deep: true })
 </script>

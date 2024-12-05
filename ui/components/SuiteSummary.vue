@@ -5,7 +5,7 @@
 		<div class="col-span-1">Total</div>
 		<div class="col-span-1">Passed</div>
 		<div class="col-span-1">Failed</div>
-		<div class="col-span-1 hidden md:flex">Ignored</div>
+		<div class="col-span-1">Ignored</div>
 		<div class="col-span-1">Duration</div>
 		<div class="col-span-1">Trends</div>
 		<div class="col-span-1"></div>
@@ -19,8 +19,8 @@
 		<div class="col-span-1">{{ summary.passed + summary.failed + summary.ignored }}</div>
 		<div class="col-span-1">{{ summary.passed }}</div>
 		<div class="col-span-1">{{ summary.failed }}</div>
-		<div class="col-span-1">{{ summary.duration }}</div>
 		<div class="col-span-1">{{ summary.ignored }}</div>
+		<div class="col-span-1">{{ summary.duration }}</div>
 		<div class="col-span-1"><NuxtLink target="_blank" :to="'/timetrends?suiteName=' + summary.suiteName"><GraphIcon class="w-6 h-6 text-green-600"/></NuxtLink></div>
 		<div class="col-span-1"
 				 v-on:click="updateCurrentSuiteRun(summary.runId, summary.suiteId, summary.suiteName)">details</div>
@@ -28,7 +28,7 @@
 
 	<div class="grid grid-cols-12">
 		<div class="col-span-12">
-			<Run :runId="currentRunId"
+			<Tests :runId="currentRunId"
 								 :suiteId="currentSuiteId"
 								 :suiteName="currentSuiteName"
 								 :showIgnored="showIgnored"

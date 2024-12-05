@@ -1,32 +1,39 @@
 <template>
 	<div class="mx-auto w-11/12">
 		<div class="mt-5 text-darkmode-blue-contrast1 border px-6 py-6 mx-auto rounded">
-			<CommonQuery v-on:updrepo="updateRepo" v-on:updtags="updateTags" :repo="repo" :tags="tags" />
+			<CommonQuery v-on:updrepo="updateRepo"
+									 v-on:updtags="updateTags"
+									 :repo="repo"
+									 :tags="tags" />
 		</div>
-		
-		<div class="w-full md:w-full gap-4 border border-darkplum px-4 py-4 mx-auto rounded bg-indigo-50 shadow-2xl mt-10">
-			<BarChart v-if="timetrends && timetrends.datasets && timetrends.datasets.length > 0" class="w-full h-screen"
+
+		<div class="w-full md:w-full  gap-4 border border-darkplum px-4 py-4 mx-auto rounded bg-indigo-50 shadow-2xl mt-10">
+			<BarChart v-if="timetrends && timetrends.datasets && timetrends.datasets.length > 0"
+								class="w-full h-96"
 								key="timetrends"
-                v-on:dataset-clicked="showRunWithIndex"
+								v-on:dataset-clicked="showRunWithIndex"
 								:chartData="timetrends" />
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import {  getReliabilityTrendsForSuites, getTimeTrendsForSuites } from "@/sdk/backend/api";
-import type {  TimeTrendsData } from '~/sdk/backend/types'
+import { getReliabilityTrendsForSuites, getTimeTrendsForSuites } from "@/sdk/backend/api";
+import type { TimeTrendsData } from '~/sdk/backend/types'
 
 const defaultRepo = ""
 const qrepo = useRoute().query["repo"]
 const repo = ref(qrepo ? qrepo.toString() : defaultRepo)
 
+const branch = useRoute().query["branch"]?.toString() ?? ""
+const commitSha = useRoute().query["commitSha"]?.toString() ?? ""
+console.log("COMMIT SHA -> ", commitSha)
 const tags = ref(new Map<string, string>())
 const suiteName = useRoute().query["suiteName"]?.toString() ?? ""
 const timetrends = ref({} as TimeTrendsData)
 
 onBeforeMount(async () => {
-	timetrends.value = await getReliabilityTrendsForSuites(repo.value, suiteName, tags.value)
+	timetrends.value = await getReliabilityTrendsForSuites(repo.value, branch, commitSha, suiteName, tags.value)
 })
 
 const clone = function <T>(item: T): T {
@@ -35,28 +42,36 @@ const clone = function <T>(item: T): T {
 
 watch(repo, async (currentValue, oldValue) => {
 	console.log("repo watch")
-	timetrends.value = await getReliabilityTrendsForSuites(currentValue, suiteName, tags.value)
+	timetrends.value = await getReliabilityTrendsForSuites(currentValue, branch, commitSha, suiteName, tags.value)
 }, { deep: true })
 
 watch(tags, async (currentValue, oldValue) => {
 	console.log("tags watch")
-	timetrends.value = await getReliabilityTrendsForSuites(repo.value, suiteName, currentValue)
+	timetrends.value = await getReliabilityTrendsForSuites(repo.value, branch, commitSha, suiteName, currentValue)
 }, { deep: true })
 
-const showRunWithIndex = async function (obj: {index: string, label: string, datasetLabel: string}) {
-  // console.log("clicked at ", index, " valat:", label)
-  await navigateTo(`/reliabilitytrends?repo=${repo.value}&commitSha=${obj.label}`, {
-    open: {
-      target: '_blank',
-    }
-  })
+const showRunWithIndex = async function (obj: { index: string, label: string, datasetLabel: string }) {
+	// console.log("clicked at ", index, " valat:", label)
+	if (commitSha) {
+		await navigateTo(`/run/${obj.label}`, {
+			open: {
+				target: '_blank',
+			}
+		})
+		return
+	}
+	await navigateTo(`/reliability/commit?repo=${repo.value}&commitSha=${obj.label}`, {
+		open: {
+			target: '_blank',
+		}
+	})
 }
 
-const updateRepo = function(val: string) {
+const updateRepo = function (val: string) {
 	repo.value = val
 }
 
-const updateTags = function(val: Map<string, string>) {
+const updateTags = function (val: Map<string, string>) {
 	console.log("final upd tags", val)
 	tags.value = val
 }

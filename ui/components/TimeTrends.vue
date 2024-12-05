@@ -20,13 +20,15 @@ import type {  TimeTrendsData } from '~/sdk/backend/types'
 const defaultRepo = ""
 const qrepo = useRoute().query["repo"]
 const repo = ref(qrepo ? qrepo.toString() : defaultRepo)
+const branch = useRoute().query["branch"]?.toString() ?? ""
+const commitSha = useRoute().query["commitSha"]?.toString() ?? ""
 
 const tags = ref(new Map<string, string>())
 const suiteName = useRoute().query["suiteName"]?.toString() ?? ""
 const timetrends = ref({} as TimeTrendsData)
 
 onBeforeMount(async () => {
-	timetrends.value = await getTimeTrendsForSuites(repo.value, suiteName, tags.value)
+	timetrends.value = await getTimeTrendsForSuites(repo.value, branch, commitSha, suiteName, tags.value)
 })
 
 const clone = function <T>(item: T): T {
@@ -35,12 +37,12 @@ const clone = function <T>(item: T): T {
 
 watch(repo, async (currentValue, oldValue) => {
 	console.log("repo watch")
-	timetrends.value = await getTimeTrendsForSuites(currentValue, suiteName, tags.value)
+	timetrends.value = await getTimeTrendsForSuites(currentValue, branch, commitSha, suiteName, tags.value)
 }, { deep: true })
 
 watch(tags, async (currentValue, oldValue) => {
 	console.log("tags watch")
-	timetrends.value = await getTimeTrendsForSuites(repo.value, suiteName, currentValue)
+	timetrends.value = await getTimeTrendsForSuites(repo.value, branch, commitSha, suiteName, currentValue)
 }, { deep: true })
 
 const showRunWithIndex = async function (obj: {index: string, label: string, datasetLabel: string}) {

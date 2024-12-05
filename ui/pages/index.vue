@@ -3,7 +3,7 @@
     <div :class="{'border rounded-lg px-5 py-2 cursor-pointer': true, 'bg-darkmode-background-contrast1 ': selectedIndex === 0}" v-on:click="changeSelection(0)">Reliability</div>
     <div :class="{'border rounded-lg ml-2 px-5 py-2 cursor-pointer': true, 'bg-darkmode-background-contrast1 ': selectedIndex === 1}" v-on:click="changeSelection(1)">Duration</div>
   </div>
-  <Trends v-if="selectedIndex===0"/>
+  <ReliabilityTrends v-if="selectedIndex===0"/>
   <TimeTrends v-if="selectedIndex===1"/>
 </template>
 <script lang="ts" setup>

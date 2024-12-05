@@ -8,9 +8,8 @@
 		<div class="col-span-1">Ignored</div>
 		<div class="col-span-1">Duration</div>
 		<div class="col-span-2 text-left">On</div>
-		<div class="col-span-4">Tags</div>
+		<div class="col-span-4">Tags2</div>
 	</div>
-
 	<div class="grid">
 		<div class="grid grid-cols-12 border border-darkplum px-2 py-3 text-xs text-darkmode-blue-contrast1">
 			<div class="col-span-1 font-bold">
