@@ -14,6 +14,7 @@ const currentRun = ref<Summary>({} as Summary)
 const showIgnored = ref(false)
 const runId: string = useRoute().params["id"] ? useRoute().params["id"].toString() : ""
 
+console.log("run id -> ", runId)
 onBeforeMount(async () => {
 	currentRun.value = await getSummary(runId)
 })

@@ -34,7 +34,7 @@
 
 				<div class="flex justify-start">
 					<span v-for="(value, key) in metadata.tags"
-								class="px-2 py-1 rounded bg-darkmode-blue-contrast3 text-darkgreen ml-1 wrap">{{ key }}: {{ value }}</span>
+								class="px-2 py-1 rounded bg-darkmode-blue-contrast3 text-darkgreen ml-2 wrap">{{ key }}: {{ value }}</span>
 				</div>
 
 				<div class="flex justify-items-end">

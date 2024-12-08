@@ -66,13 +66,15 @@ import { Test } from "@/sdk/backend/types";
 const props = defineProps({
 	repo: { type: String, required: false, default: "" },
 	runId: { type: String, required: false, default: "" },
+	suiteId: { type: String, required: false, default: "" },
+	suiteName: { type: String, required: false, default: "" },
 	tags: { type: Object as PropType<Map<string, string>>, required: false, default: new Map<string, string>() },
 	showIgnored: { type: Boolean, default: true },
 	forlogs: { type: Boolean, default: false },
 	fortestname: { type: Boolean, default: false }
 })
 
-const showFailedOnly = ref(false)
+const showFailedOnly = ref(true)
 const tests = ref<Test[]>()
 
 onBeforeMount(async () => {
@@ -95,7 +97,7 @@ onBeforeMount(async () => {
 	}
 
 	if (props.runId) {
-		tests.value = await getTestsForRunAndSuite(props.runId, "0")
+		tests.value = await getTestsForRunAndSuite(props.runId, props.suiteId)
 	}
 })
 
@@ -114,13 +116,15 @@ const filteredTests = computed(() => tests.value ? tests.value.filter(item => {
 const lastIndex = computed(() => filteredTests.value ? filteredTests.value.length - 1 : 0)
 
 const highlight = function (line: string): string {
+	//remove terminal colors
+	const loglineWoutColors = line.toString().replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "")
 	const logline = useRoute().query["logLine"];
 	if (!logline) {
-		return line
+		return loglineWoutColors
 	}
 
 	var check = new RegExp(logline.toString(), "ig");
-	return line.toString().replace(check, function (matchedText, a, b) {
+	return loglineWoutColors.toString().replace(check, function (matchedText, a, b) {
 		return ('<span class="bg-seagreen font-bold px-1 py-0.5 rounded">' + matchedText + '</span>');
 	});
 }

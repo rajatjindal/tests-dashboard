@@ -184,11 +184,11 @@ func FetchSuiteSummaryForRunId(ctx context.Context, runId string) ([]*types.Suit
 	return suites, nil
 }
 
-func FetchTestsByRunIdAndSuite(ctx context.Context, runId, suite string) ([]*types.Test, error) {
+func FetchTestsByRunIdAndSuite(ctx context.Context, runId, suiteId string) ([]*types.Test, error) {
 	conn := db()
 	defer conn.Close()
 
-	rows, err := conn.Queryx("select * from tests where run_id = ? AND suite_id = ?;", runId, suite)
+	rows, err := conn.Queryx("select * from tests where run_id = ? AND suite_id = ?;", runId, suiteId)
 	if err != nil {
 		return nil, err
 	}
@@ -359,6 +359,7 @@ GROUP BY
 	return items, nil
 }
 
+// TODO(rajatjindal): do in a transaction
 func IngestTestRun(ctx context.Context, metadata *types.Metadata, summary *types.Summary, suites []types.Suite) error {
 	conn := db()
 	defer conn.Close()
@@ -379,22 +380,87 @@ func IngestTestRun(ctx context.Context, metadata *types.Metadata, summary *types
 		return err
 	}
 
-	for index, suite := range suites {
-		_, err := conn.QueryxContext(ctx, "INSERT INTO suite_summary (run_id, suite_id, suite_name, result, passed, failed, ignored, duration, created_at) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", suite.RunId, index, suite.SuiteName, suite.Result, suite.Passed, suite.Failed, suite.Ignored, suite.Duration, suite.CreatedAt)
+	// do batch update instead of one at a time
+	suiteInsertStrings := []string{}
+	suiteInsertParams := []interface{}{}
+	testInsertStrings := []string{}
+	testInsertParams := []interface{}{}
+	total := 0
+	for {
+		for index, suite := range suites {
+			total = total + 1
+			suiteInsertStrings = append(suiteInsertStrings, "(?, ?, ?, ?, ?, ?, ?, ?, ?)")
+			suiteInsertParams = append(suiteInsertParams, suite.RunId, index, suite.SuiteName, suite.Result, suite.Passed, suite.Failed, suite.Ignored, suite.Duration, suite.CreatedAt)
+
+			for _, test := range suite.TestsTree {
+				total = total + 1
+				testInsertStrings = append(testInsertStrings, "(?, ?, ?, ?, ?, ?, ?, ?)")
+				testInsertParams = append(testInsertParams, test.RunId, index, test.SuiteName, test.Name, test.Result, test.Duration, test.Logs, test.CreatedAt)
+			}
+
+			if total > 500 {
+				fmt.Println("inserting ", total)
+				// refresh the conn to hopefully fix "The stream has expired due to inactivity" error
+				conn = db()
+				suiteInsertSql := fmt.Sprintf("INSERT INTO suite_summary (run_id, suite_id, suite_name, result, passed, failed, ignored, duration, created_at) VALUES %s", strings.Join(suiteInsertStrings, ","))
+				_, err = conn.QueryxContext(ctx, suiteInsertSql, suiteInsertParams...)
+				if err != nil {
+					return err
+				}
+
+				testsInsertSql := fmt.Sprintf("INSERT INTO tests (run_id, suite_id, suite_name, name, result, duration, logs, created_at) VALUES %s", strings.Join(testInsertStrings, ","))
+				_, err = conn.QueryxContext(ctx, testsInsertSql, testInsertParams...)
+				if err != nil {
+					return err
+				}
+
+				total = 0
+				testInsertStrings = []string{}
+				testInsertParams = []interface{}{}
+				suiteInsertStrings = []string{}
+				suiteInsertParams = []interface{}{}
+			}
+
+		}
+
+		conn = db()
+
+		fmt.Println("inserting last ", total)
+		//insert the remaining ones
+		suiteInsertSql := fmt.Sprintf("INSERT INTO suite_summary (run_id, suite_id, suite_name, result, passed, failed, ignored, duration, created_at) VALUES %s", strings.Join(suiteInsertStrings, ","))
+		_, err = conn.QueryxContext(ctx, suiteInsertSql, suiteInsertParams...)
 		if err != nil {
 			return err
 		}
 
-		for _, test := range suite.TestsTree {
-			// fmt.Println("index is -> %d", index)
-			_, err := conn.QueryxContext(ctx, "INSERT INTO tests (run_id, suite_id, suite_name, name, result, duration, logs, created_at) values (?, ?, ?, ?, ?, ?, ?, ?)", test.RunId, fmt.Sprintf("%d", index), test.SuiteName, test.Name, test.Result, test.Duration, test.Logs, test.CreatedAt)
-			if err != nil {
-				return err
-			}
+		testsInsertSql := fmt.Sprintf("INSERT INTO tests (run_id, suite_id, suite_name, name, result, duration, logs, created_at) VALUES %s", strings.Join(testInsertStrings, ","))
+		_, err = conn.QueryxContext(ctx, testsInsertSql, testInsertParams...)
+		if err != nil {
+			return err
 		}
+		break
 	}
 
 	return nil
+	// for index, suite := range suites {
+	// 	suiteInsertStrings = append(suiteInsertStrings, "(?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	// 	suiteInsertParams = append(suiteInsertParams, suite.RunId, index, suite.SuiteName, suite.Result, suite.Passed, suite.Failed, suite.Ignored, suite.Duration, suite.CreatedAt)
+
+	// 	for _, test := range suite.TestsTree {
+	// 		testInsertStrings = append(testInsertStrings, "(?, ?, ?, ?, ?, ?, ?, ?)")
+	// 		testInsertParams = append(testInsertParams, test.RunId, index, test.SuiteName, test.Name, test.Result, test.Duration, test.Logs, test.CreatedAt)
+	// 	}
+	// }
+
+	// suiteInsertSql := fmt.Sprintf("INSERT INTO suite_summary (run_id, suite_id, suite_name, result, passed, failed, ignored, duration, created_at) VALUES %s", strings.Join(suiteInsertStrings, ","))
+	// _, err = conn.QueryxContext(ctx, suiteInsertSql, suiteInsertParams...)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// testsInsertSql := fmt.Sprintf("INSERT INTO tests (run_id, suite_id, suite_name, name, result, duration, logs, created_at) VALUES %s", strings.Join(testInsertStrings, ","))
+	// _, err = conn.QueryxContext(ctx, testsInsertSql, testInsertParams...)
+	// return err
 }
 
 func UpdateMetadata(ctx context.Context, runId, metadata string) error {
@@ -719,6 +785,7 @@ WHERE
 				Label:           "passed",
 				Data:            []float64{},
 				BackgroundColor: "#34e8bd",
+				Hidden:          true,
 			},
 			{
 				Label:           "failed",

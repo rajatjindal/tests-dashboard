@@ -200,6 +200,11 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 	} else {
 		summary, suites, err = rustjson.Ingest(runId, rawResults)
 	}
+	if err != nil {
+		fmt.Println("ERROR ", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err = storage.IngestTestRun(r.Context(), &metadata, summary, suites)
 	if err != nil {
