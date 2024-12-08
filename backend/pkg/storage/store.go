@@ -184,6 +184,7 @@ func FetchSuiteSummaryForRunId(ctx context.Context, runId string) ([]*types.Suit
 	return suites, nil
 }
 
+// TODO(rajatjindal): fetch failed only on server side to improve perf of this query
 func FetchTestsByRunIdAndSuite(ctx context.Context, runId, suiteId string) ([]*types.Test, error) {
 	conn := db()
 	defer conn.Close()

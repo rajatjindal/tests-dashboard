@@ -44,6 +44,7 @@ func (p *eventProcessor) processEvent(runId string, event Event) {
 	p.suites[suiteName] = suite
 }
 
+// TODO(rajatjindal): there could be subsuites e.g. SuiteA/SubSuiteB/SubSubSuiteC/testcase
 func processEvent(p *types.Suite, runId string, suiteName string, event Event) {
 	switch event.Action {
 	case "run":
