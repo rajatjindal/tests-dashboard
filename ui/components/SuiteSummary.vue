@@ -1,7 +1,7 @@
 <template>
 	<div
-			 class="grid grid-cols-7 md:grid-cols-8 border border-darkplum text-darkmode-blue-contrast1 px-2 py-3 text-xs uppercase tracking-wider border-b-0 text-darkplum mt-20">
-		<div class="col-span-1">Suite name</div>
+			 class="grid grid-cols-9 md:grid-cols-9 border border-darkplum text-darkmode-blue-contrast1 px-2 py-3 text-xs uppercase tracking-wider border-b-0 text-darkplum mt-20">
+		<div class="col-span-2">Suite name</div>
 		<div class="col-span-1">Total</div>
 		<div class="col-span-1">Passed</div>
 		<div class="col-span-1">Failed</div>
@@ -14,8 +14,8 @@
 
 	<div v-for="summary in suites"
 			 :key="summary.suiteId"
-			 class="grid grid-cols-7 md:grid-cols-8 border border-darkplum px-2 py-3 text-xs text-darkmode-blue-contrast1">
-		<div class="col-span-1">{{ summary.suiteName }}</div>
+			 class="grid grid-cols-9 md:grid-cols-9 border border-darkplum px-2 py-3 text-xs text-darkmode-blue-contrast1">
+		<div class="col-span-2">{{ summary.suiteName }}</div>
 		<div class="col-span-1">{{ summary.passed + summary.failed + summary.ignored }}</div>
 		<div class="col-span-1">{{ summary.passed }}</div>
 		<div class="col-span-1">{{ summary.failed }}</div>

@@ -3,7 +3,9 @@
 		<div class="mt-5 text-darkmode-blue-contrast1 border px-6 py-6 mx-auto rounded">
 			<CommonQuery v-on:updrepo="updateRepo"
 									 v-on:updtags="updateTags"
+									 v-on:updbranch="updateBranch"
 									 :repo="repo"
+									 :branch="branch"
 									 :tags="tags" />
 		</div>
 
@@ -18,61 +20,64 @@
 </template>
 
 <script setup lang="ts">
-import { getReliabilityTrendsForSuites, getTimeTrendsForSuites } from "@/sdk/backend/api";
+import { getReliabilityTrendsForSuites } from "@/sdk/backend/api";
 import type { TimeTrendsData } from '~/sdk/backend/types'
 
-const defaultRepo = ""
-const qrepo = useRoute().query["repo"]
-const repo = ref(qrepo ? qrepo.toString() : defaultRepo)
-
-const branch = useRoute().query["branch"]?.toString() ?? ""
+const repo = ref(useRoute().query["repo"]?.toString() ?? "")
+const branch = ref(useRoute().query["branch"]?.toString() ?? "")
 const commitSha = useRoute().query["commitSha"]?.toString() ?? ""
-console.log("COMMIT SHA -> ", commitSha)
-const tags = ref(new Map<string, string>())
 const suiteName = useRoute().query["suiteName"]?.toString() ?? ""
+
+const tags = ref(new Map<string, string>())
 const timetrends = ref({} as TimeTrendsData)
 
 onBeforeMount(async () => {
-	timetrends.value = await getReliabilityTrendsForSuites(repo.value, branch, commitSha, suiteName, tags.value)
+	timetrends.value = await getReliabilityTrendsForSuites(repo.value, branch.value, commitSha, suiteName, tags.value)
 })
 
-const clone = function <T>(item: T): T {
-	return JSON.parse(JSON.stringify(item))
-}
-
+// watch fns
 watch(repo, async (currentValue, oldValue) => {
-	console.log("repo watch")
-	timetrends.value = await getReliabilityTrendsForSuites(currentValue, branch, commitSha, suiteName, tags.value)
+	timetrends.value = await getReliabilityTrendsForSuites(currentValue, branch.value, commitSha, suiteName, tags.value)
+}, { deep: true })
+
+watch(branch, async (currentValue, oldValue) => {
+	timetrends.value = await getReliabilityTrendsForSuites(repo.value, currentValue, commitSha, suiteName, tags.value)
 }, { deep: true })
 
 watch(tags, async (currentValue, oldValue) => {
 	console.log("tags watch")
-	timetrends.value = await getReliabilityTrendsForSuites(repo.value, branch, commitSha, suiteName, currentValue)
+	timetrends.value = await getReliabilityTrendsForSuites(repo.value, branch.value, commitSha, suiteName, currentValue)
 }, { deep: true })
 
-const showRunWithIndex = async function (obj: { index: string, label: string, datasetLabel: string }) {
+const showRunWithIndex = async function (obj: { index: number, label: string, datasetLabel: string }) {
+	const id = timetrends.value.ids[obj.index]
 	// console.log("clicked at ", index, " valat:", label)
 	if (commitSha) {
-		await navigateTo(`/run/${obj.label}`, {
-			open: {
-				target: '_blank',
-			}
+		await navigateTo(`/run/${id}`, {
+			// open: {
+			// 	target: '_blank',
+			// }
 		})
 		return
 	}
-	await navigateTo(`/reliability/commit?repo=${repo.value}&commitSha=${obj.label}`, {
-		open: {
-			target: '_blank',
-		}
+
+	await navigateTo(`/reliability/commit?repo=${repo.value}&branch=${branch.value}&commitSha=${id}`, {
+		// open: {
+		// 	target: '_blank',
+		// }
 	})
 }
 
+// update fns
 const updateRepo = function (val: string) {
 	repo.value = val
 }
 
 const updateTags = function (val: Map<string, string>) {
-	console.log("final upd tags", val)
 	tags.value = val
+}
+
+const updateBranch = function (val: string) {	
+	branch.value = val
 }
 </script>

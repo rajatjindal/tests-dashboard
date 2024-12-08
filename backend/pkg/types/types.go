@@ -47,7 +47,8 @@ type Metadata struct {
 	Branch    string            `json:"branch" db:"branch"`
 	Format    string            `json:"format" db:"format"`
 	Link      string            `json:"link" db:"link"`
-	Tags      map[string]string `json:"tags" db:"tags"`
+	RawTags   string            `json:"-" db:"tags"`
+	Tags      map[string]string `json:"tags" db:"-"`
 	CreatedAt string            `json:"createdAt" db:"created_at"`
 }
 
@@ -109,8 +110,10 @@ type Dataset struct {
 	Data            []float64 `json:"data"`
 	Stack           string    `json:"stack"`
 	BackgroundColor string    `json:"backgroundColor"`
+	Hidden          bool      `json:"hidden"`
 }
 type TimeTrendsData struct {
-	Labels   []string  `json:"labels"`
-	Datasets []Dataset `json:"datasets"`
+	Labels   [][]string `json:"labels"`
+	Ids      []string   `json:"ids"`
+	Datasets []Dataset  `json:"datasets"`
 }

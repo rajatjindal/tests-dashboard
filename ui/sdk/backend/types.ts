@@ -62,7 +62,8 @@ export interface Dataset {
 }
 
 export interface TimeTrendsData {
-	labels: string[];
+	labels: string[][];
+	ids: string[];
 	datasets: Dataset[];
 }
 

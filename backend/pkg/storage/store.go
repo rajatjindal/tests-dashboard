@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"strings"
+	"time"
 
 	"github.com/fermyon/spin-go-sdk/sqlite"
 	"github.com/jmoiron/sqlx"
@@ -246,6 +247,13 @@ func FetchMetadataForRun(ctx context.Context, runId string) (*types.Metadata, er
 			return nil, err
 		}
 
+		var tags map[string]string
+		err = json.Unmarshal([]byte(item.RawTags), &tags)
+		if err != nil {
+			tags["ERROR"] = "FAILED TO PARSE TAGS"
+		}
+
+		item.Tags = tags
 		return &item, nil
 	}
 
@@ -434,6 +442,8 @@ func FetchTimeTrendsForSuite(ctx context.Context, filter *types.SuiteTrendsFilte
 		params = append(params, perPage)
 	}
 
+	fmt.Println(query)
+	fmt.Println(params)
 	rows, err := conn.QueryxContext(ctx, query, params...)
 	if err != nil {
 		return nil, err
@@ -470,7 +480,7 @@ func FetchTimeTrendsForSuite(ctx context.Context, filter *types.SuiteTrendsFilte
 	sumdata := &types.TimeTrendsData{}
 	suiteMap := map[string]types.Dataset{}
 	for commitSha, abcMap := range datamap {
-		sumdata.Labels = append(sumdata.Labels, commitSha)
+		sumdata.Labels = append(sumdata.Labels, []string{commitSha})
 		for _, suitesMap := range abcMap {
 			for suiteName, entry := range suitesMap {
 				existing, ok := suiteMap[entry.RunId+suiteName]
@@ -563,6 +573,7 @@ func FetchReliabilityTrends(ctx context.Context, filter types.CommonFilter) (*ty
 	query := `
 SELECT 
 	metadata.commit_sha as commit_sha,
+	metadata.created_at as created_at,
 	sum(summary.passed) as passed, 
 	sum(summary.failed) as failed, 
 	sum(summary.ignored) as ignored 
@@ -577,7 +588,7 @@ WHERE
 		query += strings.Join(clause, " AND ")
 	}
 
-	query += ` GROUP BY metadata.commit_sha`
+	query += ` GROUP BY metadata.commit_sha ORDER BY created_at`
 
 	rows, err := conn.QueryxContext(ctx, query, params...)
 	if err != nil {
@@ -586,6 +597,7 @@ WHERE
 
 	type TempData struct {
 		CommitSha string `db:"commit_sha"`
+		CreatedAt string `db:"created_at"`
 		Passed    int    `db:"passed"`
 		Failed    int    `db:"failed"`
 		Ignored   int    `db:"ignored"`
@@ -597,6 +609,7 @@ WHERE
 				Label:           "passed",
 				Data:            []float64{},
 				BackgroundColor: "#34e8bd",
+				Hidden:          true,
 			},
 			{
 				Label:           "failed",
@@ -604,7 +617,7 @@ WHERE
 				BackgroundColor: "#CE5050",
 			},
 			{
-				Label:           "ignored",
+				Label:           "skipped",
 				Data:            []float64{},
 				BackgroundColor: "#9ca3af",
 			},
@@ -619,7 +632,17 @@ WHERE
 			return nil, err
 		}
 
-		sumdata.Labels = append(sumdata.Labels, item.CommitSha)
+		//(TODO): TEMP WORKAROUND FOR TESTS. IN ACTUAL DATE WLL BE PUSHED
+		if item.CreatedAt == "" {
+			item.CreatedAt = time.Now().Format(time.RFC3339)
+		}
+		createdAt, err := time.Parse(time.RFC3339, item.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		sumdata.Labels = append(sumdata.Labels, []string{item.CommitSha, createdAt.Format("01/02 15:04")})
+		sumdata.Ids = append(sumdata.Ids, item.CommitSha) // helps with creating links
 		sumdata.Datasets[0].Data = append(sumdata.Datasets[0].Data, float64(item.Passed))
 		sumdata.Datasets[1].Data = append(sumdata.Datasets[1].Data, float64(item.Failed))
 		sumdata.Datasets[2].Data = append(sumdata.Datasets[2].Data, float64(item.Ignored))
@@ -703,7 +726,7 @@ WHERE
 				BackgroundColor: "#CE5050",
 			},
 			{
-				Label:           "ignored",
+				Label:           "skipped",
 				Data:            []float64{},
 				BackgroundColor: "#9ca3af",
 			},
@@ -718,7 +741,14 @@ WHERE
 			return nil, err
 		}
 
-		sumdata.Labels = append(sumdata.Labels, item.RunId)
+		tags := map[string]string{}
+		err = json.Unmarshal([]byte(item.Tags), &tags)
+		if err != nil {
+			return nil, err
+		}
+
+		sumdata.Labels = append(sumdata.Labels, []string{tags["engine_version"], tags["workflow"], tags["job"]})
+		sumdata.Ids = append(sumdata.Ids, item.RunId) // helps with creating links
 		sumdata.Datasets[0].Data = append(sumdata.Datasets[0].Data, float64(item.Passed))
 		sumdata.Datasets[1].Data = append(sumdata.Datasets[1].Data, float64(item.Failed))
 		sumdata.Datasets[2].Data = append(sumdata.Datasets[2].Data, float64(item.Ignored))

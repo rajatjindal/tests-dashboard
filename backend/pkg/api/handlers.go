@@ -48,6 +48,7 @@ func fetchReliabilityTrends(w http.ResponseWriter, r *http.Request, params spinh
 	fmt.Printf("reliability: %#v", filter)
 	summary, err := storage.FetchReliabilityTrends(r.Context(), filter)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -65,6 +66,7 @@ func fetchAllRuns(w http.ResponseWriter, r *http.Request, params spinhttp.Params
 	filter := getCommonFilterFromRequest(r)
 	summary, err := storage.FetchAllRuns(r.Context(), filter)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -75,6 +77,7 @@ func fetchAllRuns(w http.ResponseWriter, r *http.Request, params spinhttp.Params
 func fetchMetadataForRun(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
 	summary, err := storage.FetchMetadataForRun(r.Context(), params.ByName("runId"))
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -85,6 +88,7 @@ func fetchMetadataForRun(w http.ResponseWriter, r *http.Request, params spinhttp
 func fetchSummaryForRun(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
 	summary, err := storage.FetchSummaryForRun(r.Context(), params.ByName("runId"))
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -96,12 +100,14 @@ func updateMetadata(w http.ResponseWriter, r *http.Request, params spinhttp.Para
 	runId := params.ByName("runId")
 	raw, err := io.ReadAll(r.Body)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = storage.UpdateMetadata(r.Context(), runId, string(raw))
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -117,6 +123,7 @@ func getTags(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
 	filter := getCommonFilterFromRequest(r)
 	tags, err := storage.GetTagsForQuery(r.Context(), filter)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -130,6 +137,7 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 
 	reader, err := r.MultipartReader()
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -144,6 +152,7 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 		}
 
 		if err != nil {
+			fmt.Println("ERROR ", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -166,6 +175,7 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 			fmt.Printf("metadata is %s\n", string(raw))
 			err = json.Unmarshal(raw, &metadata)
 			if err != nil {
+				fmt.Println("ERROR ", err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -174,6 +184,7 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 		if params["name"] == "results" {
 			rawResults, err = io.ReadAll(part)
 			if err != nil {
+				fmt.Println("ERROR ", err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -192,6 +203,7 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 
 	err = storage.IngestTestRun(r.Context(), &metadata, summary, suites)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -201,6 +213,7 @@ func fetchSuiteSummaryForRunId(w http.ResponseWriter, r *http.Request, params sp
 
 	tests, err := storage.FetchSuiteSummaryForRunId(r.Context(), runId)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -214,6 +227,7 @@ func fetchTestsForRunIdAndSuite(w http.ResponseWriter, r *http.Request, params s
 
 	tests, err := storage.FetchTestsByRunIdAndSuite(r.Context(), runId, suiteId)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -238,6 +252,7 @@ func fetchTimeTrendsForSuite(w http.ResponseWriter, r *http.Request, params spin
 		CommonFilter: commonFilter,
 	})
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -258,6 +273,7 @@ func fetchHistoryForLogLine(w http.ResponseWriter, r *http.Request, params spinh
 
 	tests, err := storage.FetchHistoryForLogLine(r.Context(), logLine, commonFilter)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -278,6 +294,7 @@ func fetchHistoryForTestcase(w http.ResponseWriter, r *http.Request, params spin
 
 	tests, err := storage.FetchHistoryForTestcase(r.Context(), testcase, commonFilter)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -289,6 +306,7 @@ func fetchSuitesForRun(w http.ResponseWriter, r *http.Request, params spinhttp.P
 	runId := params.ByName("runId")
 	suites, err := storage.FetchSuitesForRun(r.Context(), runId)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -307,6 +325,7 @@ func fetchAllTests(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 
 	tests, err := storage.FetchAllTests(r.Context(), commonFilter)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
