@@ -1,13 +1,5 @@
 <template>
 	<div class="mt-5">
-		<div class="text-darkmode-blue-contrast1 mb-10"
-				 v-if="useRoute().query['logLine']">
-			Showing history of log line <span class="italic font-bold">{{ useRoute().query["logLine"] }}</span>
-		</div>
-		<div class="text-darkmode-blue-contrast1 mb-10"
-				 v-if="useRoute().query['testname']">
-			Showing history of testcase <span class="italic font-bold">{{ useRoute().query["testname"] }}</span>
-		</div>
 		<div class="col-span-1 text-xs my-auto">
 			<input type="checkbox"
 						 class="rounded mt-2"
@@ -15,17 +7,18 @@
 		</div>
 	</div>
 	<div
-			 class="text-darkmode-blue-contrast1 hidden md:grid grid-cols-5 gap-4 border border-darkplum px-3 py-3 text-xs uppercase tracking-wider border-b-0 text-darmplum">
+			 class="text-darkmode-blue-contrast1 hidden md:grid grid-cols-6 gap-4 border border-darkplum px-3 py-3 text-xs uppercase tracking-wider border-b-0 text-darmplum">
 		<div class="col-span-2">Name</div>
 		<div class="col-span-1">Result</div>
 		<div class="col-span-1">Duration</div>
+		<div class="col-span-1">History</div>
 		<div class="col-span-1"></div>
 	</div>
 
 	<div class="hidden md:grid text-darkmode-blue-contrast1">
 		<div v-for="(test, index) in filteredTests"
 				 :key="test.name"
-				 class="grid grid-cols-5 gap-4 border border-darkplum px-3 py-3 text-xs"
+				 class="grid grid-cols-6 gap-4 border border-darkplum px-3 py-3 text-xs"
 				 :class="{ 'border-b': index === lastIndex, 'border-b-0': index !== lastIndex }">
 			<div class="col-span-2">{{ test.name }}</div>
 			<div class="col-span-1 flex text-left"
@@ -44,10 +37,9 @@
 				<div class="ml-1 mr-1 text-darkplum">{{ test.result }}</div>
 			</div>
 			<div class="col-span-1">{{ humanDuration(test.duration) }}</div>
-			<div class="col-span-1 underline">
-				<NuxtLink :to="'/run/' + test.runId">details</NuxtLink>
-			</div>
-			<div class="col-span-4">
+			<div class="col-span-1"><TestHistory :name="test.name" :runId="test.runId"/></div>
+			<div class="col-span-1 underline" v-on:click="showLogs(index)">Show Logs</div>
+			<div class="col-span-4" v-if="showingLogs === index">
 				<p v-for="line in test.logs.split('\n')"
 					 class="text-darkplum italic">
 					<span v-html="highlight(line)"></span>
@@ -76,6 +68,16 @@ const props = defineProps({
 
 const showFailedOnly = ref(true)
 const tests = ref<Test[]>()
+
+const showingLogs = ref(-1)
+const showLogs = function(index: number) {
+	if (showingLogs.value > 0) {
+		showingLogs.value = -1
+		return
+	}
+
+	showingLogs.value = index
+}
 
 onBeforeMount(async () => {
 	if (props.forlogs) {

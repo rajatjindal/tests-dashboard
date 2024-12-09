@@ -119,7 +119,7 @@ func FetchHistoryForTestcase(ctx context.Context, testname string, filter types.
 	conn := db()
 	defer conn.Close()
 
-	query := "select tests.* from tests, metadata where metadata.run_id = tests.run_id AND lower(tests.name) LIKE ?"
+	query := "select tests.* from tests, metadata where metadata.run_id = tests.run_id AND lower(tests.name) like ?"
 	clause, params, err := getClauseAndParamsFromCommonFilter(filter)
 	if err != nil {
 		return nil, err
@@ -130,7 +130,27 @@ func FetchHistoryForTestcase(ctx context.Context, testname string, filter types.
 		query += strings.Join(clause, " AND ")
 	}
 
-	rows, err := conn.Queryx(query, append([]interface{}{"%" + testname + "%"}, params...)...)
+	perPage := filter.PerPage
+
+	//defaults to defaultPerPage if filter.PerPage is not provided
+	if perPage == 0 {
+		perPage = defaultPerPage
+	}
+
+	query += " order by metadata.created_at desc"
+	if filter.Page > 0 {
+		query += " offset ?"
+		params = append(params, filter.Page*perPage)
+	}
+
+	if perPage > 0 {
+		query += " limit ?"
+		params = append(params, perPage)
+	}
+
+	fmt.Println(query)
+	fmt.Printf("%#v\n", append([]interface{}{"%" + strings.ToLower(testname) + "%"}, params...))
+	rows, err := conn.Queryx(query, append([]interface{}{strings.ToLower(testname)}, params...)...)
 	if err != nil {
 		return nil, err
 	}
@@ -143,6 +163,7 @@ func FetchHistoryForTestcase(ctx context.Context, testname string, filter types.
 			return nil, err
 		}
 
+		test.Logs = ""
 		tests = append(tests, &test)
 	}
 
