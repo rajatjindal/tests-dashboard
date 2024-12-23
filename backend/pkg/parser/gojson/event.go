@@ -44,6 +44,7 @@ func (p *eventProcessor) processEvent(runId string, event Event) {
 	p.suites[suiteName] = suite
 }
 
+// TODO(rajatjindal): there could be subsuites e.g. SuiteA/SubSuiteB/SubSubSuiteC/testcase
 func processEvent(p *types.Suite, runId string, suiteName string, event Event) {
 	switch event.Action {
 	case "run":
@@ -67,8 +68,6 @@ func processEvent(p *types.Suite, runId string, suiteName string, event Event) {
 		test := findTest(p, runId, event)
 		test.LogsBuilder.WriteString(event.Output)
 	case "pass":
-		p.Passed = p.Passed + 1
-
 		if event.Test == suiteName {
 			p.EndTime = event.Time
 			p.Result = "ok"
@@ -76,13 +75,12 @@ func processEvent(p *types.Suite, runId string, suiteName string, event Event) {
 			return
 		}
 
+		p.Passed = p.Passed + 1
 		test := findTest(p, runId, event)
 		test.Result = "ok"
 		test.Duration = event.Elapsed
 		test.Logs = test.LogsBuilder.String()
 	case "fail":
-		p.Failed = p.Failed + 1
-
 		if event.Test == suiteName {
 			p.EndTime = event.Time
 			p.Result = "failed"
@@ -90,13 +88,12 @@ func processEvent(p *types.Suite, runId string, suiteName string, event Event) {
 			return
 		}
 
+		p.Failed = p.Failed + 1
 		test := findTest(p, runId, event)
 		test.Result = "failed"
 		test.Duration = event.Elapsed
 		test.Logs = test.LogsBuilder.String()
 	case "skip":
-		p.Ignored = p.Ignored + 1
-
 		if event.Test == suiteName {
 			p.Ignored++
 			p.Result = "ignored"
@@ -105,6 +102,7 @@ func processEvent(p *types.Suite, runId string, suiteName string, event Event) {
 			return
 		}
 
+		p.Ignored = p.Ignored + 1
 		test := findTest(p, runId, event)
 		test.Result = "ignored"
 		test.Duration = event.Elapsed

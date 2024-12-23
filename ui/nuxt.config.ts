@@ -34,6 +34,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       baseURL: ''
+      // baseURL: 'http://localhost:3000'
+      // baseURL: 'https://tests-dashboard.rajatjindal.com'
     }
   },
 

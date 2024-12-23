@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"strings"
 
 	spinhttp "github.com/fermyon/spin-go-sdk/http"
 	"github.com/rajatjindal/tests-dashboard/backend/pkg/parser/gojson"
@@ -15,6 +16,46 @@ import (
 	"github.com/rajatjindal/tests-dashboard/backend/pkg/types"
 )
 
+func getCommonFilterFromRequest(r *http.Request) types.CommonFilter {
+	fmt.Println("query -> ", r.URL.Query())
+	return types.CommonFilter{
+		Repo:      r.URL.Query().Get("repo"),
+		Branch:    r.URL.Query().Get("branch"),
+		CommitSha: r.URL.Query().Get("commitSha"),
+		Tags:      getTagsFromQuery(r),
+	}
+}
+
+func getTagsFromQuery(r *http.Request) map[string]string {
+	tags := map[string]string{}
+	for k, v := range r.URL.Query() {
+		if after, found := strings.CutPrefix(k, "tag-"); found && len(v) > 0 {
+			tags[after] = v[0]
+		}
+	}
+
+	return tags
+}
+
+func fetchReliabilityTrends(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	repo := r.URL.Query().Get("repo")
+	if repo == "" {
+		http.Error(w, "repo is required", http.StatusBadRequest)
+		return
+	}
+
+	filter := getCommonFilterFromRequest(r)
+	fmt.Printf("reliability: %#v", filter)
+	summary, err := storage.FetchReliabilityTrends(r.Context(), filter)
+	if err != nil {
+		fmt.Println("ERROR ", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	prettyPrint(w, summary)
+}
+
 func fetchAllRuns(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
 	repo := r.URL.Query().Get("repo")
 	if repo == "" {
@@ -22,8 +63,10 @@ func fetchAllRuns(w http.ResponseWriter, r *http.Request, params spinhttp.Params
 		return
 	}
 
-	summary, err := storage.FetchAllRuns(r.Context(), repo)
+	filter := getCommonFilterFromRequest(r)
+	summary, err := storage.FetchAllRuns(r.Context(), filter)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -34,6 +77,7 @@ func fetchAllRuns(w http.ResponseWriter, r *http.Request, params spinhttp.Params
 func fetchMetadataForRun(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
 	summary, err := storage.FetchMetadataForRun(r.Context(), params.ByName("runId"))
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -44,6 +88,7 @@ func fetchMetadataForRun(w http.ResponseWriter, r *http.Request, params spinhttp
 func fetchSummaryForRun(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
 	summary, err := storage.FetchSummaryForRun(r.Context(), params.ByName("runId"))
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -55,15 +100,35 @@ func updateMetadata(w http.ResponseWriter, r *http.Request, params spinhttp.Para
 	runId := params.ByName("runId")
 	raw, err := io.ReadAll(r.Body)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = storage.UpdateMetadata(r.Context(), runId, string(raw))
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func getTags(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	repo := r.URL.Query().Get("repo")
+	if repo == "" {
+		http.Error(w, "repo is required", http.StatusBadRequest)
+		return
+	}
+
+	filter := getCommonFilterFromRequest(r)
+	tags, err := storage.GetTagsForQuery(r.Context(), filter)
+	if err != nil {
+		fmt.Println("ERROR ", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	prettyPrint(w, tags)
 }
 
 func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
@@ -72,6 +137,7 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 
 	reader, err := r.MultipartReader()
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -86,6 +152,7 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 		}
 
 		if err != nil {
+			fmt.Println("ERROR ", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -108,6 +175,7 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 			fmt.Printf("metadata is %s\n", string(raw))
 			err = json.Unmarshal(raw, &metadata)
 			if err != nil {
+				fmt.Println("ERROR ", err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -116,6 +184,7 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 		if params["name"] == "results" {
 			rawResults, err = io.ReadAll(part)
 			if err != nil {
+				fmt.Println("ERROR ", err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -131,9 +200,15 @@ func ingestTestRun(w http.ResponseWriter, r *http.Request, params spinhttp.Param
 	} else {
 		summary, suites, err = rustjson.Ingest(runId, rawResults)
 	}
+	if err != nil {
+		fmt.Println("ERROR ", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err = storage.IngestTestRun(r.Context(), &metadata, summary, suites)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -143,11 +218,48 @@ func fetchSuiteSummaryForRunId(w http.ResponseWriter, r *http.Request, params sp
 
 	tests, err := storage.FetchSuiteSummaryForRunId(r.Context(), runId)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	prettyPrint(w, tests)
+}
+
+func fetchTopNSlowestTestSuites(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	repo := r.URL.Query().Get("repo")
+	if repo == "" {
+		http.Error(w, "repo is required", http.StatusBadRequest)
+		return
+	}
+
+	filter := getCommonFilterFromRequest(r)
+	items, err := storage.FetchTopNSlowestTestSuites(r.Context(), filter)
+	if err != nil {
+		fmt.Println("ERROR ", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	prettyPrint(w, items)
+}
+
+func fetchTopNFlakyTestSuites(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	repo := r.URL.Query().Get("repo")
+	if repo == "" {
+		http.Error(w, "repo is required", http.StatusBadRequest)
+		return
+	}
+
+	filter := getCommonFilterFromRequest(r)
+	items, err := storage.FetchTopNFlakyTestSuites(r.Context(), filter)
+	if err != nil {
+		fmt.Println("ERROR ", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	prettyPrint(w, items)
 }
 
 func fetchTestsForRunIdAndSuite(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
@@ -156,6 +268,7 @@ func fetchTestsForRunIdAndSuite(w http.ResponseWriter, r *http.Request, params s
 
 	tests, err := storage.FetchTestsByRunIdAndSuite(r.Context(), runId, suiteId)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -164,13 +277,23 @@ func fetchTestsForRunIdAndSuite(w http.ResponseWriter, r *http.Request, params s
 }
 
 func fetchTimeTrendsForSuite(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	repo := r.URL.Query().Get("repo")
+	if repo == "" {
+		http.Error(w, "repo is required", http.StatusBadRequest)
+		return
+	}
+
+	commonFilter := getCommonFilterFromRequest(r)
+	commonFilter.Page = 0
+	commonFilter.PerPage = -1
+
 	suiteName := r.URL.Query().Get("suiteName")
 	trends, err := storage.FetchTimeTrendsForSuite(r.Context(), &types.SuiteTrendsFilter{
-		SuiteName: suiteName,
-		PerPage:   -1,
-		Page:      0,
+		SuiteName:    suiteName,
+		CommonFilter: commonFilter,
 	})
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -179,10 +302,19 @@ func fetchTimeTrendsForSuite(w http.ResponseWriter, r *http.Request, params spin
 }
 
 func fetchHistoryForLogLine(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
+	repo := r.URL.Query().Get("repo")
+	if repo == "" {
+		http.Error(w, "repo is required", http.StatusBadRequest)
+		return
+	}
+
+	commonFilter := getCommonFilterFromRequest(r)
+
 	logLine := r.URL.Query().Get("logLine")
 
-	tests, err := storage.FetchHistoryForLogLine(r.Context(), logLine)
+	tests, err := storage.FetchHistoryForLogLine(r.Context(), logLine, commonFilter)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -191,10 +323,19 @@ func fetchHistoryForLogLine(w http.ResponseWriter, r *http.Request, params spinh
 }
 
 func fetchHistoryForTestcase(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
-	logLine := r.URL.Query().Get("name")
+	repo := r.URL.Query().Get("repo")
+	if repo == "" {
+		http.Error(w, "repo is required", http.StatusBadRequest)
+		return
+	}
 
-	tests, err := storage.FetchHistoryForTestcase(r.Context(), logLine)
+	commonFilter := getCommonFilterFromRequest(r)
+
+	testcase := r.URL.Query().Get("name")
+
+	tests, err := storage.FetchHistoryForTestcase(r.Context(), testcase, commonFilter)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -206,6 +347,7 @@ func fetchSuitesForRun(w http.ResponseWriter, r *http.Request, params spinhttp.P
 	runId := params.ByName("runId")
 	suites, err := storage.FetchSuitesForRun(r.Context(), runId)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -214,8 +356,17 @@ func fetchSuitesForRun(w http.ResponseWriter, r *http.Request, params spinhttp.P
 }
 
 func fetchAllTests(w http.ResponseWriter, r *http.Request, params spinhttp.Params) {
-	tests, err := storage.FetchAllTests(r.Context())
+	repo := r.URL.Query().Get("repo")
+	if repo == "" {
+		http.Error(w, "repo is required", http.StatusBadRequest)
+		return
+	}
+
+	commonFilter := getCommonFilterFromRequest(r)
+
+	tests, err := storage.FetchAllTests(r.Context(), commonFilter)
 	if err != nil {
+		fmt.Println("ERROR ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

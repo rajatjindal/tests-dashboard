@@ -71,7 +71,7 @@ const testname = ref(useRoute().query["testname"]?.toString())
 const searchTerm = ref("")
 
 onBeforeMount(async () => 
-	tests.value = await getTestsForLogLine(testname.toString())
+	tests.value = await getTestsForLogLine("", "", "", testname.toString(), new Map<string, string>())
 	// if (props.runId) {
 	// 	tests.value = await getTestsForRunAndSuite(props.runId, "0")
 	// }
